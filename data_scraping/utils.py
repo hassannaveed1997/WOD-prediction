@@ -81,12 +81,13 @@ def clean_description(name, description):
 
     "goal": "The goal of the workout, either 'for time','AMRAP','load'. AMRAP stands for 'as many rounds/reps as possible'",
     "time_cap": "The time cap for the workout in minutes, if any. Otherwise null",
+    "total_reps": "The total number of reps in the workout, if the workout is for time, otherwise null",
     "description": "A description of the workout, copy pasted from above, but without goal and timecap lines"
 
     Some things to keep in mind:
     - Some workouts descriptions may have more than one workout, such as 23.2A and 23.2B, in that case, treat each seperately. The json object should have 2 entries, one named 23.2A and the other 23.2B
 
-    The first one is done for you:
+    The first two are done for you:
 
     -----
     17.6:
@@ -100,6 +101,7 @@ def clean_description(name, description):
     "17.6":{{
     "goal": "AMRAP",
     "time_cap": 13,
+    "total_reps": null,
     "description": "55 deadlifts (225 lb), 55 wall-ball shots (20-lb ball to 10-ft target), 55-calorie bike, 55 pullups"
     }}
     }}

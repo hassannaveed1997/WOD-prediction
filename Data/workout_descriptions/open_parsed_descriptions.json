@@ -1,0 +1,32 @@
+{
+    "17.1": {
+        "goal": "For time",
+        "time_cap": 20,
+        "total_reps": null,
+        "description": "10 dumbbell snatches, 15 burpee box jump-overs, 20 dumbbell snatches, 15 burpee box jump-overs, 30 dumbbell snatches, 15 burpee box jump-overs, 40 dumbbell snatches, 15 burpee box jump-overs, 50 dumbbell snatches, 15 burpee box jump-overs"
+    },
+    "17.2": {
+        "goal": "AMRAP",
+        "time_cap": 12,
+        "total_reps": null,
+        "description": "2 rounds of: 50-ft. weighted walking lunge, 16 toes-to-bars, 8 power cleans, Then, 2 rounds of: 50-ft. weighted walking lunge, 16 bar muscle-ups, 8 power cleans, Etc., alternating between toes-to-bars and bar muscle-ups every 2 rounds. Men use 50-lb. dumbbells"
+    },
+    "17.3": {
+        "goal": "For Time",
+        "time_cap": 24,
+        "total_reps": null,
+        "description": "Prior to 8:00, complete: 3 rounds of: 6 chest-to-bar pull-ups, 6 squat snatches (95 lb). Then, 3 rounds of: 7 chest-to-bar pull-ups, 5 squat snatches (135 lb). *Prior to 12:00, complete 3 rounds of: 8 chest-to-bar pull-ups, 4 squat snatches (185 lb). *Prior to 16:00, complete 3 rounds of: 9 chest-to-bar pull-ups, 3 squat snatches (225 lb). *Prior to 20:00, complete 3 rounds of: 10 chest-to-bar pull-ups, 2 squat snatches (245 lb). Prior to 24:00, complete 3 rounds of: 11 chest-to-bar pull-ups, 1 squat snatch (265 lb). *If all reps are completed, time cap extends by 4 minutes."
+    },
+    "17.4": {
+        "goal": "AMRAP",
+        "time_cap": 13,
+        "total_reps": null,
+        "description": "55 deadlifts (225 lb), 55 wall-ball shots (20-lb ball to 10-ft target), 55-calorie row, 55 handstand push-ups"
+    },
+    "17.5": {
+        "goal": "for time",
+        "time_cap": null,
+        "total_reps": 440,
+        "description": "10 rounds for time of: 9 thrusters (95 lb), 35 double-unders"
+    }
+}
