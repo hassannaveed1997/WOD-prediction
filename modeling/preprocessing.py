@@ -21,7 +21,10 @@ def convert_time_cap_workout_to_reps(x, total_reps, time_cap, scale_up=False):
     2. Scale up the number of reps to 100*20/15 = 133.33, which could approximate the number of reps the athlete would have finished in 20 minutes.
     """
     # TODO: Implement this function
-    return x
+    if (scale_up):
+        return total_reps*time_cap/x 
+    else:
+       return x
 
 
 def convert_time_cap_workout_to_time(x, total_reps, time_cap, scale_up=False):
@@ -32,7 +35,10 @@ def convert_time_cap_workout_to_time(x, total_reps, time_cap, scale_up=False):
     2. Scale up the time to 20*100/80 = 25, which could approximate the time the athlete would have taken finished the workout. (Not necessarily though)
     """
     # TODO: Implement this function
-    return x
+    if (scale_up):
+        return total_reps*time_cap/x 
+    else:
+       return x
 
 
 def convert_to_floats(df, descriptions):
@@ -82,9 +88,30 @@ def convert_to_floats(df, descriptions):
 
     return df_modified
 
+
+
 def handle_outliers(df):
     """
     This function will detect outliers in the data. and replace them with missing values
     """
     # TODO: Implement this function
-    return df
+    score_headers = ['17.2_score','17.4_score','17.5_score']
+    outlierCheck = [False, False, False]
+    outlier_values = {}
+    index = 0
+    for score in score_headers: 
+        df_score = df[score]
+        upperQuartile = df_score.quantile(.75)
+        lowerQuartile = df_score.quantile(.25)
+        iqr = upperQuartile - lowerQuartile
+        outlierBool = ((df_score > (upperQuartile + 1.5*iqr) ) | (df_score < (lowerQuartile - 1.5*iqr) ))
+        if outlierBool.any():
+            outlierCheck[index] = True
+            outlier_values[score] = df_score[outlierBool]
+        index = index + 1
+    return outlier_values
+
+  
+# df = pd.read_csv('Mens_Crossfit_data_cleaned.csv')
+# #print(df)
+# print(handle_outliers(df))
