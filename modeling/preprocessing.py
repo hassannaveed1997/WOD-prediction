@@ -21,35 +21,7 @@ def convert_time_cap_workout_to_reps(x, total_reps, time_cap, scale_up=False):
     2. Scale up the number of reps to 100*20/15 = 133.33, which could approximate the number of reps the athlete would have finished in 20 minutes.
     """
     # TODO: Implement this function
-    try:
-        int_x = int(x) #x is reps
-        # if x > total_reps: #did more reps than goal
-        #     return x
-        # else: #did fewer reps
-        #     if scale_up:
-        #         total_reps*time_cap/
-        #     else:
-        #         return x
-        return x
-    except ValueError: #x is in time
-        time_parts = x.split()
-        time = time_parts[2]
-
-    # if (scale_up):
-    #     return total_reps*time_cap/x 
-    # else:
-    #    return x
     
-    #time > reps
-    #216
-    #if time inputted, you would return total reps
-    #
-    #convert everything to 
-    #merged['17.3_score'].unique()
-
-
-   # more than half is reps, so convert all to reps 
-
 
 def convert_time_cap_workout_to_time(x, total_reps, time_cap, scale_up=False):
     """
@@ -59,11 +31,7 @@ def convert_time_cap_workout_to_time(x, total_reps, time_cap, scale_up=False):
     2. Scale up the time to 20*100/80 = 25, which could approximate the time the athlete would have taken finished the workout. (Not necessarily though)
     """
     # TODO: Implement this function
-    if (scale_up):
-        return total_reps*time_cap/x 
-    else:
-       return x
-
+    
 
 def convert_to_floats(df, descriptions):
     """
