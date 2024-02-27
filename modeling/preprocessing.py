@@ -21,10 +21,34 @@ def convert_time_cap_workout_to_reps(x, total_reps, time_cap, scale_up=False):
     2. Scale up the number of reps to 100*20/15 = 133.33, which could approximate the number of reps the athlete would have finished in 20 minutes.
     """
     # TODO: Implement this function
-    if (scale_up):
-        return total_reps*time_cap/x 
-    else:
-       return x
+    try:
+        int_x = int(x) #x is reps
+        # if x > total_reps: #did more reps than goal
+        #     return x
+        # else: #did fewer reps
+        #     if scale_up:
+        #         total_reps*time_cap/
+        #     else:
+        #         return x
+        return x
+    except ValueError: #x is in time
+        time_parts = x.split()
+        time = time_parts[2]
+
+    # if (scale_up):
+    #     return total_reps*time_cap/x 
+    # else:
+    #    return x
+    
+    #time > reps
+    #216
+    #if time inputted, you would return total reps
+    #
+    #convert everything to 
+    #merged['17.3_score'].unique()
+
+
+   # more than half is reps, so convert all to reps 
 
 
 def convert_time_cap_workout_to_time(x, total_reps, time_cap, scale_up=False):
@@ -95,23 +119,23 @@ def handle_outliers(df):
     This function will detect outliers in the data. and replace them with missing values
     """
     # TODO: Implement this function
-    score_headers = ['17.2_score','17.4_score','17.5_score']
-    outlierCheck = [False, False, False]
-    outlier_values = {}
-    index = 0
+    df_modified = df.copy()
+    column_names = df.columns.tolist()
+    score_headers = []
+    for column in column_names:
+        if '_score' in column:
+            score_headers.append(column) 
     for score in score_headers: 
-        df_score = df[score]
-        upperQuartile = df_score.quantile(.75)
-        lowerQuartile = df_score.quantile(.25)
+        df_copy_score = df_modified[score]
+        upperQuartile = df_copy_score.quantile(.75)
+        lowerQuartile = df_copy_score.quantile(.25)
         iqr = upperQuartile - lowerQuartile
-        outlierBool = ((df_score > (upperQuartile + 1.5*iqr) ) | (df_score < (lowerQuartile - 1.5*iqr) ))
-        if outlierBool.any():
-            outlierCheck[index] = True
-            outlier_values[score] = df_score[outlierBool]
-        index = index + 1
-    return outlier_values
+        for index, row in df_modified.iterrows():
+            value = row[score]
+            if ((value > (upperQuartile + 1.5*iqr)) | (value < (lowerQuartile - 1.5*iqr))).any(): 
+                df_modified.loc[index, score] = '0'
+    return df_modified
 
   
-# df = pd.read_csv('Mens_Crossfit_data_cleaned.csv')
-# #print(df)
-# print(handle_outliers(df))
+#df = pd.read_csv('Mens_Crossfit_data_cleaned.csv')
+#print(handle_outliers(df))
