@@ -21,8 +21,17 @@ def convert_time_cap_workout_to_reps(x, total_reps, time_cap, scale_up=False):
     2. Scale up the number of reps to 100*20/15 = 133.33, which could approximate the number of reps the athlete would have finished in 20 minutes.
     """
     # TODO: Implement this function
-    return x
-
+    # if x is reported as reps
+    if (isinstance(x, int)):
+        # athlete finished the workout
+        if (x >= total_reps):
+            return x
+        # athlete did not finish the workout -> scale_up
+        else:
+            return total_reps * time_cap / x
+    # if x is reported as time, then athlete finished workout
+    else:
+        return total_reps
 
 def convert_time_cap_workout_to_time(x, total_reps, time_cap, scale_up=False):
     """
@@ -32,10 +41,19 @@ def convert_time_cap_workout_to_time(x, total_reps, time_cap, scale_up=False):
     2. Scale up the time to 20*100/80 = 25, which could approximate the time the athlete would have taken finished the workout. (Not necessarily though)
     """
     # TODO: Implement this function
-    return x
+    # if x is reported as a time, athlete finished
+    if (not isinstance(x, int)):
+        return x
+    # if x is reported as rep
+    else:
+        # athlete did not finish workout, scape_up
+        if (x < total_reps):
+            return time_cap * total_reps / x
+        # athlete finished workout
+        else:
+            return time_cap
 
-
-def convert_to_floats(df, descriptions):
+def convert_to_floats(df, descriptions, threshold = .5):
     """
     This function will take a workout from the open, such as 17.1, 17.3, etc. and convert it to a float. It is intended to be a standard way to convert workouts to floats.
     We can use descriptions from "WOD-prediction/Data/workout_descriptions/open_parsed_descriptions.json"
