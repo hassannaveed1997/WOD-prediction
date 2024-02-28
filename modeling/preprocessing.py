@@ -1,6 +1,62 @@
 import pandas as pd
 import numpy as np
 
+LB_MULTIPLIER = 2.20462
+CM_MULTIPLIER = 0.393701
+
+def convert_units(df, type, columns = None):
+    """
+    Helper function to convert units from metric to imperial
+
+    Parameters:
+    ----------
+    df: pd.DataFrame
+        The dataframe with the columns to be converted
+    type: str
+        The type of conversion. It can be either 'weight' or 'height'
+    columns: list
+        The columns to be converted. If None, all columns would be tested except 'name'
+    
+    Returns:
+    -------
+    df: pd.DataFrame
+        The modified dataframe with the converted columns
+
+    """
+    # if no columns are provided, use all columns except 'name'
+    if not columns:
+        columns = list(df.columns)
+        if 'name' in columns:
+            columns.remove('name')
+
+    # determine the multiplier and key words to remove based on the type
+    if type == 'weight':
+        multiplier = LB_MULTIPLIER
+        key_words_to_remove = ['kg', 'lb']
+
+    elif type == 'height':
+        multiplier = CM_MULTIPLIER
+        key_words_to_remove = ['cm', 'in']
+    else:
+        raise ValueError('type must be "weight" or "height"')
+
+    # iterate through each column and convert the units
+    for col in columns:
+        if df[col].dtype == 'object': # if its not an object, we can skip
+            # determine which rows contain the key words
+            rows_with_key_words = df[col].str.contains(key_words_to_remove[0], na = False) 
+            if not rows_with_key_words.any():
+                continue
+            for word in key_words_to_remove:
+                df[col] = df[col].str.replace(word, '', regex = False)
+            df[col] = df[col].str.strip()
+
+
+            df[col] = df[col].astype(float)
+            df[col] = df[col] * multiplier
+            print(f"Converted {col} to {type} in imperial units")
+    return df
+
 def convert_to_datetime(dt_col):
     """
     Converts a whole column to datetime if it is of type object.
