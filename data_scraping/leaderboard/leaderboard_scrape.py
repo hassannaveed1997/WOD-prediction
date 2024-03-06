@@ -15,6 +15,9 @@ def scrape_data_for_year(year, division = "mens",num_pages = None):
 
     division_num = division_mapping[division.lower()]
 
+    if str(year) not in year_to_col_name_mapping:
+        raise ValueError(f"Year {year} not in year_to_col_name_mapping, please check")
+
     # get number of pages
     url = f'https://c3po.crossfit.com/api/leaderboards/v2/competitions/open/{year}/leaderboards?view=0&division={division_num}&region=0&scaled=0&sort=0&page=1'
     response = urlopen(url)
@@ -48,8 +51,6 @@ def scrape_data_for_year(year, division = "mens",num_pages = None):
     # Create DataFrames
     athlete_info_df = pd.DataFrame(athlete_info_data, columns=["id", "name", "age", "height", "weight"])
     scores_df = pd.DataFrame(scores_data, columns=["id"]+year_to_col_name_mapping[str(year)])
-
-
 
     # save to csv
     athlete_info_df.to_csv(f'../../Data/{year}_{division}_info.csv')
