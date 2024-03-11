@@ -100,10 +100,10 @@ def handle_outliers(df):
         iqr = upperQuartile - lowerQuartile
         for index, row in df_modified.iterrows():
             value = row[score]
-            if ((value > (upperQuartile + 1.5*iqr)) | (value < (lowerQuartile - 1.5*iqr))).any(): 
+            if (value > (upperQuartile + 1.5*iqr)) or (value < (lowerQuartile - 1.5*iqr)): 
                 df_modified.loc[index, score] = '0'
     return df_modified
 
   
-#df = pd.read_csv('Mens_Crossfit_data_cleaned.csv')
-#print(handle_outliers(df))
+# df = pd.read_csv('Mens_Crossfit_data_cleaned.csv')
+# print(handle_outliers(df))
