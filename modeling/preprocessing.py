@@ -82,24 +82,32 @@ def convert_to_floats(df, descriptions):
 
 
 
-def handle_outliers(df):
+def handle_outliers(df, score_headers = None):
     """
     This function will detect outliers in the data. and replace them with missing values
     """
-    # TODO: Implement this function
     df_modified = df.copy()
-    column_names = df.columns.tolist()
-    score_headers = []
-    score_headers = df.columns[df.columns.str.contains('_score')]
+
+    # If score_headers is None, use all columns
+    if score_headers is None:
+        score_headers = df.columns
+        
+    # Sanity check to confirm that the columns are numeric
+    for col in score_headers:
+        if df_modified[col].dtype not in [int, float]:
+            raise ValueError(f"Column {col} is not numeric, convert to numeric first")
+    
+
+    # fill 0 with na first to prevent missing
+    df_modified = df_modified.replace(0, np.nan)
+
+    # find interquartile rang
     upper_quartiles = df_modified[score_headers].quantile(0.75)
     lower_quartiles = df_modified[score_headers].quantile(0.25) 
     iqr = upper_quartiles - lower_quartiles
+
+    # find outliers
     outliers = (df_modified[score_headers] > (upper_quartiles + 1.5 * iqr)) | (df_modified[score_headers] < (lower_quartiles - 1.5 * iqr))
-    df_modified[outliers] = '0'
+    df_modified[outliers] = np.nan
 
     return df_modified
-
-  
-# df = pd.read_csv('Mens_Crossfit_data_cleaned.csv')
-# print(df)
-# print(handle_outliers(df))
