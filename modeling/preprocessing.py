@@ -90,20 +90,16 @@ def handle_outliers(df):
     df_modified = df.copy()
     column_names = df.columns.tolist()
     score_headers = []
-    for column in column_names:
-        if '_score' in column:
-            score_headers.append(column) 
-    for score in score_headers: 
-        df_copy_score = df_modified[score]
-        upperQuartile = df_copy_score.quantile(.75)
-        lowerQuartile = df_copy_score.quantile(.25)
-        iqr = upperQuartile - lowerQuartile
-        for index, row in df_modified.iterrows():
-            value = row[score]
-            if (value > (upperQuartile + 1.5*iqr)) or (value < (lowerQuartile - 1.5*iqr)): 
-                df_modified.loc[index, score] = '0'
+    score_headers = df.columns[df.columns.str.contains('_score')]
+    upper_quartiles = df_modified[score_headers].quantile(0.75)
+    lower_quartiles = df_modified[score_headers].quantile(0.25) 
+    iqr = upper_quartiles - lower_quartiles
+    outliers = (df_modified[score_headers] > (upper_quartiles + 1.5 * iqr)) | (df_modified[score_headers] < (lower_quartiles - 1.5 * iqr))
+    df_modified[outliers] = '0'
+
     return df_modified
 
   
 # df = pd.read_csv('Mens_Crossfit_data_cleaned.csv')
+# print(df)
 # print(handle_outliers(df))
