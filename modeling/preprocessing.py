@@ -119,8 +119,7 @@ def convert_time_cap_workout_to_reps(x, total_reps, time_cap, scale_up=False):
     2. Scale up the number of reps to 100*20/15 = 133.33, which could approximate the number of reps the athlete would have finished in 20 minutes.
     """
     # TODO: Implement this function
-    return x
-
+    
 
 def convert_time_cap_workout_to_time(x, total_reps, time_cap, scale_up=False):
     """
@@ -130,8 +129,7 @@ def convert_time_cap_workout_to_time(x, total_reps, time_cap, scale_up=False):
     2. Scale up the time to 20*100/80 = 25, which could approximate the time the athlete would have taken finished the workout. (Not necessarily though)
     """
     # TODO: Implement this function
-    return x
-
+    
 
 def convert_to_floats(df, descriptions):
     """
@@ -180,9 +178,34 @@ def convert_to_floats(df, descriptions):
 
     return df_modified
 
-def handle_outliers(df):
+
+
+def handle_outliers(df, score_headers = None):
     """
     This function will detect outliers in the data. and replace them with missing values
     """
-    # TODO: Implement this function
-    return df
+    df_modified = df.copy()
+
+    # If score_headers is None, use all columns
+    if score_headers is None:
+        score_headers = df.columns
+        
+    # Sanity check to confirm that the columns are numeric
+    for col in score_headers:
+        if df_modified[col].dtype not in [int, float]:
+            raise ValueError(f"Column {col} is not numeric, convert to numeric first")
+    
+
+    # fill 0 with na first to prevent missing
+    df_modified = df_modified.replace(0, np.nan)
+
+    # find interquartile rang
+    upper_quartiles = df_modified[score_headers].quantile(0.75)
+    lower_quartiles = df_modified[score_headers].quantile(0.25) 
+    iqr = upper_quartiles - lower_quartiles
+
+    # find outliers
+    outliers = (df_modified[score_headers] > (upper_quartiles + 1.5 * iqr)) | (df_modified[score_headers] < (lower_quartiles - 1.5 * iqr))
+    df_modified[outliers] = np.nan
+
+    return df_modified
