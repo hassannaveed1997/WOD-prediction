@@ -53,7 +53,7 @@ def convert_units(df, type, columns = None):
 
 
             df[col] = df[col].astype(float)
-            df[col] = df[col] * multiplier
+            df.loc[rows_with_key_words,col] = df.loc[rows_with_key_words,col] * multiplier
             print(f"Converted {col} to {type} in imperial units")
     return df
 
