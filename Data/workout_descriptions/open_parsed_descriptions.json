@@ -1,32 +1,201 @@
 {
     "17.1": {
-        "goal": "For time",
+        "goal": "For Time",
         "time_cap": 20,
-        "total_reps": null,
+        "total_reps": 225,
         "description": "10 dumbbell snatches, 15 burpee box jump-overs, 20 dumbbell snatches, 15 burpee box jump-overs, 30 dumbbell snatches, 15 burpee box jump-overs, 40 dumbbell snatches, 15 burpee box jump-overs, 50 dumbbell snatches, 15 burpee box jump-overs"
     },
     "17.2": {
         "goal": "AMRAP",
         "time_cap": 12,
         "total_reps": null,
-        "description": "2 rounds of: 50-ft. weighted walking lunge, 16 toes-to-bars, 8 power cleans, Then, 2 rounds of: 50-ft. weighted walking lunge, 16 bar muscle-ups, 8 power cleans, Etc., alternating between toes-to-bars and bar muscle-ups every 2 rounds. Men use 50-lb. dumbbells"
+        "description": "Complete as many rounds and reps as possible in 12 minutes of: 2 rounds of: 50-ft. weighted walking lunge, 16 toes-to-bars, 8 power cleans. Then, 2 rounds of: 50-ft. weighted walking lunge, 16 bar muscle-ups, 8 power cleans. Etc., alternating between toes-to-bars and bar muscle-ups every 2 rounds. Men use 50-lb. dumbbells"
     },
     "17.3": {
         "goal": "For Time",
         "time_cap": 24,
-        "total_reps": null,
+        "total_reps": 216,
         "description": "Prior to 8:00, complete: 3 rounds of: 6 chest-to-bar pull-ups, 6 squat snatches (95 lb). Then, 3 rounds of: 7 chest-to-bar pull-ups, 5 squat snatches (135 lb). *Prior to 12:00, complete 3 rounds of: 8 chest-to-bar pull-ups, 4 squat snatches (185 lb). *Prior to 16:00, complete 3 rounds of: 9 chest-to-bar pull-ups, 3 squat snatches (225 lb). *Prior to 20:00, complete 3 rounds of: 10 chest-to-bar pull-ups, 2 squat snatches (245 lb). Prior to 24:00, complete 3 rounds of: 11 chest-to-bar pull-ups, 1 squat snatch (265 lb). *If all reps are completed, time cap extends by 4 minutes."
     },
     "17.4": {
         "goal": "AMRAP",
         "time_cap": 13,
         "total_reps": null,
-        "description": "55 deadlifts (225 lb), 55 wall-ball shots (20-lb ball to 10-ft target), 55-calorie row, 55 handstand push-ups"
+        "description": "Complete as many rounds and reps as possible in 13 minutes of: 55 deadlifts (225 lb), 55 wall-ball shots (20-lb ball to 10-ft. target), 55-calorie row, 55 handstand push-ups"
     },
     "17.5": {
-        "goal": "for time",
+        "goal": "For Time",
         "time_cap": null,
         "total_reps": 440,
-        "description": "10 rounds for time of: 9 thrusters (95 lb), 35 double-unders"
+        "description": "10 rounds For Time of: 9 thrusters (95 lb), 35 double-unders"
+    },
+    "18.1": {
+        "goal": "AMRAP",
+        "time_cap": 20,
+        "total_reps": null,
+        "description": "Complete as many rounds as possible in 20 minutes of: 8 toes-to-bars, 10 dumbbell hang clean and jerks, 14-cal. row, Men use 50-lb. dumbbell"
+    },
+    "18.2": {
+        "goal": "For Time",
+        "time_cap": 12,
+        "total_reps": 110,
+        "description": "1-2-3-4-5-6-7-8-9-10 reps, Dumbbell squats, Bar-facing burpees, Men use 50-lb. dumbbells"
+    },
+    "18.2a": {
+        "goal": "Load",
+        "time_cap": 12,
+        "total_reps": 2,
+        "description": "Dumbbell squat, Bar-facing burpees, 1-rep-max clean, Men use 50-lb. dumbbells"
+    },
+    "18.3": {
+        "goal": "For Time",
+        "time_cap": 14,
+        "total_reps": 928,
+        "description": "2 rounds For Time of: 100 double-unders, 20 overhead squats, 100 double-unders, 12 ring muscle-ups, 100 double-unders, 20 dumbbell snatches, 100 double-unders, 12 bar muscle-ups, Men perform 115-lb. OHS, 50-lb. DB snatches"
+    },
+    "18.4": {
+        "goal": "For Time",
+        "time_cap": 9,
+        "total_reps": 129,
+        "description": "21 deadlifts (225 lb), 21 handstand push-ups, 15 deadlifts (225 lb), 15 handstand push-ups, 9 deadlifts (225 lb), 9 handstand push-ups, 21 deadlifts (315 lb), 50-ft. handstand walk, 15 deadlifts (315 lb), 50-ft. handstand walk, 9 deadlifts (315 lb), 50-ft. handstand walk"
+    },
+    "18.5": {
+        "goal": "AMRAP",
+        "time_cap": 7,
+        "total_reps": null,
+        "description": "3 thrusters, 3 chest-to-bar pull-ups, 6 thrusters, 6 chest-to-bar pull-ups, 9 thrusters, 9 chest-to-bar pull-ups, 12 thrusters, 12 chest-to-bar pull-ups, 15 thrusters, 15 chest-to-bar pull-ups, 18 thrusters, 18 chest-to-bar pull-ups, This is a timed workout. If you complete the round of 18, go on to 21. If you complete 21, go on to 24, etc., Men use 100 lb."
+    },
+    "19.1": {
+        "goal": "AMRAP",
+        "time_cap": 15,
+        "total_reps": null,
+        "description": "Complete as many rounds as possible in 15 minutes of: 19 wall-ball shots, 19-cal. row, Men throw 20-lb. ball to 10-ft. target"
+    },
+    "19.2": {
+        "goal": "AMRAP",
+        "time_cap": 20,
+        "total_reps": null,
+        "description": "Beginning on an 8-minute clock, complete as many reps as possible of: 25 toes-to-bars, 50 double-unders, 15 squat cleans (135 lb), 25 toes-to-bars, 50 double-unders, 13 squat cleans (185 lb). If completed before 8 minutes, add 4 minutes to the clock and proceed to: 25 toes-to-bars, 50 double-unders, 11 squat cleans (225 lb). If completed before 12 minutes, add 4 minutes to the clock and proceed to: 25 toes-to-bars, 50 double-unders, 9 squat cleans (275 lb). If completed before 16 minutes, add 4 minutes to the clock and proceed to: 25 toes-to-bars, 50 double-unders, 7 squat cleans (315 lb). Stop at 20 minutes."
+    },
+    "19.3": {
+        "goal": "For Time",
+        "time_cap": 10,
+        "total_reps": 102,
+        "description": "200-ft. dumbbell overhead lunge, 50 dumbbell box step-ups, 50 strict handstand push-ups, 200-ft. handstand walk, 50-lb. dumbbell, 24-in. box"
+    },
+    "19.4": {
+        "goal": "For Time",
+        "time_cap": 12,
+        "total_reps": 132,
+        "description": "3 rounds of: 10 snatches, 12 bar-facing burpees, Then, rest 3 minutes before continuing with: 3 rounds of: 10 bar muscle-ups, 12 bar-facing burpees, Men snatch 95 lb."
+    },
+    "19.5": {
+        "goal": "For Time",
+        "time_cap": 20,
+        "total_reps": 210,
+        "description": "33-27-21-15-9 reps For Time of: 95-lb. thrusters, Chest-to-bar pull-ups"
+    },
+    "20.1": {
+        "goal": "For Time",
+        "time_cap": 15,
+        "total_reps": 180,
+        "description": "10 rounds For Time of: 8 ground-to-overheads (95 lb), 10 bar-facing burpees"
+    },
+    "20.2": {
+        "goal": "AMRAP",
+        "time_cap": 20,
+        "total_reps": null,
+        "description": "Complete as many rounds as possible in 20 minutes of: 4 dumbbell thrusters, 6 toes-to-bars, 24 double-unders, 50-lb. dumbbells"
+    },
+    "20.3": {
+        "goal": "For Time",
+        "time_cap": 9,
+        "total_reps": 138,
+        "description": "21 deadlifts, 225 lb. 21 handstand push-ups 15 deadlifts, 225 lb. 15 handstand push-ups 9 deadlifts, 225 lb. 9 handstand push-ups 21 deadlifts, 315 lb. 50-ft. handstand walk 15 deadlifts, 315 lb. 50-ft. handstand walk 9 deadlifts, 315 lb. 50-ft. handstand walk"
+    },
+    "20.4": {
+        "goal": "For Time",
+        "time_cap": 20,
+        "total_reps": 240,
+        "description": "30 box jumps (24 in), 15 clean and jerks (95 lb), 30 box jumps (24 in), 15 clean and jerks (135 lb), 30 box jumps (24 in), 10 clean and jerks (185 lb), 30 single-leg squats, 10 clean and jerks (225 lb), 30 single-leg squats, 5 clean and jerks (275 lb), 30 single-leg squats, 5 clean and jerks (315 lb)"
+    },
+    "20.5": {
+        "goal": "For Time",
+        "time_cap": 20,
+        "total_reps": 161,
+        "description": "40 muscle-ups, 80-cal. row, 120 wall-ball shots (20-lb ball to 10\u00a0ft.)"
+    },
+    "21.1": {
+        "goal": "For Time",
+        "time_cap": 15,
+        "total_reps": 605,
+        "description": "1 wall walk, 10 double-unders, 3 wall walks, 30 double-unders, 6 wall walks, 60 double-unders, 9 wall walks, 90 double-unders, 15 wall walks, 150 double-unders, 21 wall walks, 210 double-unders"
+    },
+    "21.2": {
+        "goal": "For Time",
+        "time_cap": 20,
+        "total_reps": 225,
+        "description": "10 dumbbell snatches, 15 burpee box jump-overs, 20 dumbbell snatches, 15 burpee box jump-overs, 30 dumbbell snatches, 15 burpee box jump-overs, 40 dumbbell snatches, 15 burpee box jump-overs, 50 dumbbell snatches, 15 burpee box jump-overs"
+    },
+    "21.3": {
+        "goal": "For Time",
+        "time_cap": 15,
+        "total_reps": 180,
+        "description": "15 front squats, 30 toes-to-bars, 15 thrusters, Then, rest 1 minute before continuing with: 15 front squats, 30 chest-to-bar pull-ups, 15 thrusters, Then, rest 1 minute before continuing with: 15 front squats, 30 bar muscle-ups, 15 thrusters, Workout 21.4 begins immediately upon completing or reaching the time cap for 21.3, 95 lb. for the front squats and thrusters"
+    },
+    "21.4": {
+        "goal": "Load",
+        "time_cap": 7,
+        "total_reps": 4,
+        "description": "1 deadlift, 1 clean, 1 hang clean, 1 jerk, Time begins immediately following the completion of 21.3."
+    },
+    "22.1": {
+        "goal": "AMRAP",
+        "time_cap": 15,
+        "total_reps": null,
+        "description": "Complete as many rounds as possible in 15 minutes of: 3 wall walks, 12 dumbbell snatches, 15 box jump-overs, 50-lb dumbbell, 24-in box"
+    },
+    "22.2": {
+        "goal": "For Time",
+        "time_cap": 10,
+        "total_reps": 200,
+        "description": "1-2-3-4-5-6-7-8-9-10-9-8-7-6-5-4-3-2-1 reps, Deadlifts, Bar-facing burpees, 225-lb barbell"
+    },
+    "22.3": {
+        "goal": "For Time",
+        "time_cap": 12,
+        "total_reps": 216,
+        "description": "21 pull-ups, 42 double-unders, 21 thrusters (weight 1), 18 chest-to-bar pull-ups, 36 double-unders, 18 thrusters (weight 2), 15 bar muscle-ups, 30 double-unders, 15 thrusters (weight 3) 95 lb, then 115 lb, then 135 lb"
+    },
+    "23.1": {
+        "goal": "AMRAP",
+        "time_cap": 14,
+        "total_reps": null,
+        "description": "Complete as many reps as possible in 14 minutes of: 60-calorie row, 50 toes-to-bars, 40 wall-ball shots, 30 cleans, 20 muscle-ups, \u2640 14-lb ball to 9-ft target, 95-lb cleans, \u2642 20-lb ball to 10-ft target, 135-lb cleans"
+    },
+    "23.2A": {
+        "goal": "AMRAP",
+        "time_cap": 15,
+        "total_reps": null,
+        "description": "5 burpee pull-ups, 10 shuttle runs (1 rep = 25 ft out/25 ft back), *Add 5 burpee pull-ups after each round."
+    },
+    "23.2B": {
+        "goal": "Load",
+        "time_cap": 5,
+        "total_reps": 1,
+        "description": "1-rep-max thruster (from the floor)"
+    },
+    "23.3": {
+        "goal": "AMRAP",
+        "time_cap": 12,
+        "total_reps": null,
+        "description": "5 wall walks, 50 double-unders, 15 snatches (weight 1), 5 wall walks, 50 double-unders, 12 snatches (weight 2), *If completed before the 6-minute time cap, add 3 minutes to the time cap and complete: 20 strict handstand push-ups, 50 double-unders, 9 snatches (weight 3), *If completed before the 9-minute time cap, add 3 minutes to the time cap and complete: 20 strict handstand push-ups, 50 double-unders, 6 snatches (weight 4), \u2640 65 lb, 95 lb, 125 lb, 155 lb, \u2642 95 lb, 135 lb, 185 lb, 225 lb"
+    },
+    
+    "24.1": {
+        "goal": "For Time",
+        "time_cap": 15,
+        "total_reps": 180,
+        "description": "21 dumbbell snatches, arm 1, 21 lateral burpees over dumbbell, 21 dumbbell snatches, arm 2, 21 lateral burpees over dumbbell, 15 dumbbell snatches, arm 1, 15 lateral burpees over dumbbell, 15 dumbbell snatches, arm 2, 15 lateral burpees over dumbbell, 9 dumbbell snatches, arm 1, 9 lateral burpees over dumbbell, 9 dumbbell snatches, arm 2, 9 lateral burpees over dumbbell"
     }
 }
