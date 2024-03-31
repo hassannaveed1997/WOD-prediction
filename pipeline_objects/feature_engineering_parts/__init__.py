@@ -1,1 +1,1 @@
-from open_results_fe import OpenResultsFE
+from .open_results_fe import OpenResultsFE

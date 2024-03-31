@@ -2,7 +2,7 @@ import pandas as pd
 
 def convert_to_floats(data):
     # TODO: migrate the function from modeling.preprocessing to here
-    return data
+    raise NotImplementedError
 
 class OpenResultsFE:
     def __init__(self, melt = False, create_description_embeddings = False, **kwargs):
@@ -26,11 +26,11 @@ class OpenResultsFE:
         open_data = convert_to_floats(open_data)
 
         if self.melt:
-            open_data = self.melt_data(open_data)
+            y = self.melt_data(open_data)
         
         if self.create_description_embeddings:
             description_embeddings = self.create_description_embeddings(workout_descriptions)
             # merge the two datasets
-            open_data = pd.merge(open_data, description_embeddings, how='left', on='workout_id')
+            X = pd.merge(y, description_embeddings, how='left', on='workout_id')
         
         return open_data

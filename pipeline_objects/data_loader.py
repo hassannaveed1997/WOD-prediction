@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import os
+import json
 
 class DataLoader():
     def __init__(self, root_path, objects):
@@ -37,9 +38,10 @@ class DataLoader():
         pass
 
     def load_descriptions(self):
-        # TODO: load the description
-        pass
-
+        with open(os.path.join(self.root_path, 'workout_descriptions/open_parsed_descriptions.json'), 'r') as f:
+            descriptions = json.load(f)
+        return descriptions
+    
     def load_benchmark_stats(self):
         # TODO: load the benchmark stats
         pass
@@ -55,7 +57,8 @@ class DataLoader():
             raise NotImplementedError("The athlete info is not implemented yet")
         
         if 'descriptions' in self.objects:
-            raise NotImplementedError("The description is not implemented yet")
+            descriptions = self.load_descriptions()
+            data['workout_descriptions'] = descriptions
         
         if 'benchmark_stats' in self.objects:
             raise NotImplementedError("The benchmark stats is not implemented yet")
