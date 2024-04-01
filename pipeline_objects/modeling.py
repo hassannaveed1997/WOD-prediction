@@ -35,12 +35,6 @@ class RandomForestModel(BaseModeler):
         super().__init__()
 
     def fit(self, X, y):
-        # one hot encode categorical variables
-        for col in X.columns:
-            if X[col].dtype == 'object':
-                X = pd.concat([X, pd.get_dummies(X[col], prefix=col)], axis=1)
-                X.drop(col, axis=1, inplace=True)
-
         # split data
         self.split_data(X, y)
 
