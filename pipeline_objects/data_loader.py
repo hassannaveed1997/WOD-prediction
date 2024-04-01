@@ -15,21 +15,27 @@ class DataLoader():
     def load_open_results(self):
         # load the open results
         files= os.listdir(self.root_path)
-        open_results = []
+        open_results = {}
         for file in files:
             if file.endswith('scores.csv'):
-                # year = file.split('_')[0]
+                year = file.split('_')[0]
                 df = pd.read_csv(os.path.join(self.root_path, file))
 
                 # remove the columns that are not needed
                 df.set_index('id', inplace = True)
                 if 'Unnamed: 0' in df.columns:
                     df.drop(columns = ['Unnamed: 0'], inplace = True)
+                
+                
+                if year not in open_results:
+                    open_results[year] = []
+                open_results[year].append(df)
+        # for each year, we need to concatenate the results along axis 0 (horizontally)
+        for year in open_results:
+            open_results[year] = pd.concat(open_results[year], axis = 0)
 
-                open_results.append(df)
-
-        # concatenate the results
-        open_results = pd.concat(open_results, axis = 1)
+        # concatenate the results (vertically)
+        open_results = pd.concat(open_results.values(), axis = 1)
         return open_results
     
 

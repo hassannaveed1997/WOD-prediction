@@ -1,19 +1,30 @@
 import pandas as pd
 
 def convert_to_floats(data):
-    # TODO: migrate the function from modeling.preprocessing to here
-    raise NotImplementedError
+    # TODO: This is just a placeholder to proceed. We need to migrate the function from modeling.preprocessing to here
+    for col in data.columns:
+        if data[col].dtype == 'object':
+            try:
+                data[col] = data[col].str.replace(' reps','')
+                data[col] = data[col].str.replace(' lbs','')
+                data[col] = pd.to_numeric(data[col], errors='coerce')
+            except ValueError:
+                raise ValueError(f"Could not convert column {col} to float")
+    return data
 
 class OpenResultsFE:
-    def __init__(self, melt = False, create_description_embeddings = False, **kwargs):
-        self.melt = melt
+    def __init__(self,create_description_embeddings = False, **kwargs):
         self.create_description_embeddings = create_description_embeddings
         self.kwargs = kwargs
 
-    def melt_data(self):
-        raise NotImplementedError
+    def melt_data(self, open_data):
+        open_data = open_data.melt(var_name = 'workout',value_name='score', ignore_index=False).reset_index()
+
+        # get rid of missing values
+        open_data = open_data.dropna(subset = ['score'])
+        return open_data
     
-    def create_description_embeddings(self):
+    def description_embeddings(self):
         raise NotImplementedError
 
     def transform(self, open_data, workout_descriptions = None):
@@ -25,12 +36,11 @@ class OpenResultsFE:
         """
         open_data = convert_to_floats(open_data)
 
-        if self.melt:
-            y = self.melt_data(open_data)
+        open_data = self.melt_data(open_data)
         
         if self.create_description_embeddings:
-            description_embeddings = self.create_description_embeddings(workout_descriptions)
+            description_embeddings = self.description_embeddings(workout_descriptions)
             # merge the two datasets
-            X = pd.merge(y, description_embeddings, how='left', on='workout_id')
+            open_data = pd.merge(open_data, description_embeddings, how='left', on='workout')
         
         return open_data
