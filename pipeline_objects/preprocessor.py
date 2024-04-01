@@ -27,8 +27,16 @@ class DataPreprocessor:
         if 'athlete_info' in self.config:
             raise NotImplementedError("Athlete info transformation not yet implemented")
 
+        # join all feature engineered data together
+        fe_data = pd.concat(fe_data, axis = 1)
+          
+        # one hot encode categorical variables
+        for col in fe_data.columns:
+            if fe_data[col].dtype == 'object':
+                fe_data = pd.concat([fe_data, pd.get_dummies(fe_data[col], prefix=col)], axis=1)
+                fe_data.drop(col, axis=1, inplace=True)
         
-        fe_data = pd.concat(fe_data, axis = 1)  
+        
         output = {
             'X': fe_data,
             'y': y
