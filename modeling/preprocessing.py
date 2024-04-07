@@ -5,12 +5,20 @@ def convert_to_datetime(dt_col):
     """
     Converts a whole column to datetime if it is of type object.
     """
-    if dt_col.dtype == 'O':
-        # replace str nan to np.NaN
-        dt_col = dt_col.replace('nan', np.NaN)
+    # if dt_col.dtype == 'O':
+    #     # replace str nan to np.NaN
+    #     dt_col = dt_col.replace('nan', np.NaN)
 
+    #     dt_col = pd.to_timedelta(dt_col)
+    #     return dt_col
+    # return dt_col
+    try:
         dt_col = pd.to_timedelta(dt_col)
-        return dt_col
+    except ValueError:
+        try:
+            dt_col = pd.to_datetime(dt_col)
+        except ValueError:
+            pass  # If both conversions fail, keep the original values
     return dt_col
 
 def convert_time_cap_workout_to_reps(x, total_reps, time_cap, scale_up=False):
@@ -71,9 +79,10 @@ def convert_to_floats(df, descriptions, threshold = .5):
         These can be added as new columns. For example, 17.1 would become 17.1_reps if it was a workout for reps.
     """
     df_modified = df.copy()
-
+    df_modified.columns = [col.replace("_score", "") for col in df_modified.columns]
     for workout_name in df_modified.columns:
         # if we don't have the workout name in descriptions, we skip it
+        workout_name = workout_name.replace('_score', '')
         if workout_name not in descriptions:
             continue
 
@@ -93,10 +102,13 @@ def convert_to_floats(df, descriptions, threshold = .5):
                         descriptions[workout_name]["time_cap"],
                     )
                 )
+               
+                df_modified[workout_name] = df_modified[workout_name].dt.total_seconds() / 60
 
             else:
                 # if there is no time cap, we can just convert the time to a float
                 df_modified[workout_name] = convert_to_datetime(df_modified[workout_name])
+                df_modified[workout_name] = df_modified[workout_name].dt.total_seconds() / 60
 
     return df_modified
 
