@@ -1,4 +1,5 @@
-from pipeline_objects.feature_engineering_parts.open_results_fe import OpenResultsFE
+from pipeline_objects.feature_engineering_parts import OpenResultsFE,BenchmarkStatsFE
+from functools import reduce
 import pandas as pd
 
 class DataPreprocessor:
@@ -22,14 +23,16 @@ class DataPreprocessor:
             
 
         if 'benchmark_stats' in self.config:
-            raise NotImplementedError("Benchmark stats transformation not yet implemented")
+            benchmark_stats_fe = BenchmarkStatsFE(**self.config['benchmark_stats'])
+            benchmark_stats_transformed = benchmark_stats_fe.transform(data['benchmark_stats'])
+            fe_data.append(benchmark_stats_transformed)
         
         if 'athlete_info' in self.config:
             raise NotImplementedError("Athlete info transformation not yet implemented")
 
         # join all feature engineered data together
-        fe_data = pd.concat(fe_data, axis = 1)
-          
+        fe_data = reduce(lambda left, right: pd.merge(left, right, how = 'left'), fe_data)
+        
         # one hot encode categorical variables
         for col in fe_data.columns:
             if fe_data[col].dtype == 'object':
