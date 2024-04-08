@@ -1,4 +1,5 @@
 import pandas as pd
+from .base import BaseFEPipelineObject
 
 def convert_to_floats(data):
     # TODO: This is just a placeholder to proceed. We need to migrate the function from modeling.preprocessing to here
@@ -12,7 +13,7 @@ def convert_to_floats(data):
                 raise ValueError(f"Could not convert column {col} to float")
     return data
 
-class OpenResultsFE:
+class OpenResultsFE(BaseFEPipelineObject):
     def __init__(self,create_description_embeddings = False, **kwargs):
         self.create_description_embeddings = create_description_embeddings
         self.kwargs = kwargs

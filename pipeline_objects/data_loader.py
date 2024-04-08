@@ -49,8 +49,13 @@ class DataLoader():
         return descriptions
     
     def load_benchmark_stats(self):
-        # TODO: load the benchmark stats
-        pass
+        benchmark_stats = pd.read_csv(os.path.join(self.root_path, 'benchmark_stats/2023_BenchMarkStats_men3_cleaned.csv'))
+        if 'Unnamed: 0' in benchmark_stats.columns:
+            benchmark_stats.drop(columns = ['Unnamed: 0'], inplace = True)
+
+        benchmark_stats.set_index('id', inplace = True)
+        
+        return benchmark_stats
         
     def load(self):
         data= {}
@@ -67,7 +72,8 @@ class DataLoader():
             data['workout_descriptions'] = descriptions
         
         if 'benchmark_stats' in self.objects:
-            raise NotImplementedError("The benchmark stats is not implemented yet")
+            benchmark_stats = self.load_benchmark_stats()
+            data['benchmark_stats'] = benchmark_stats
             
         return data
     
