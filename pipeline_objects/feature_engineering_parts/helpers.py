@@ -3,7 +3,7 @@ import numpy as np
 from sklearn.impute import KNNImputer
 
 
-def fill_missing_values(df, method = 'knn', neighbors, identifier_columns, data_columns, **kwargs):
+def fill_missing_values(df, method, neighbors = None, identifier_columns = None, data_columns = None, **kwargs):
     # TODO: fill missing values
     if method == 'zero':
         df.fillna(0, inplace = True)
@@ -23,7 +23,7 @@ def fill_missing_values(df, method = 'knn', neighbors, identifier_columns, data_
         if not isinstance(identifier_columns, list) or len(identifier_columns) == 0:
             raise Exception("Invalid identifier_columns argument")
     
-        if not isinstance(data_columns, list) or len(identifier_columns) == 0:
+        if not isinstance(data_columns, list) or len(data_colums) == 0:
             raise Exception("Invalid data_columns argument")
     
         try:
