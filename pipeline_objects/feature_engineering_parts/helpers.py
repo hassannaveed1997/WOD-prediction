@@ -1,13 +1,48 @@
 import pandas as pd
 import numpy as np
+from sklearn.impute import KNNImputer
 
 
-def fill_missing_values(df, method = 'knn', **kwargs):
+def fill_missing_values(df, method, neighbors = None, identifier_columns = None, data_columns = None, **kwargs):
     # TODO: fill missing values
     if method == 'zero':
         df.fillna(0, inplace = True)
+        return df
 
-    return df
+    # This function will fill in missing values using the KNN algorithm. Assumes the dataset is already cleaned.
+
+    # Parameters
+    # neighbors -> number of neighbors to compare to for KNN algorithm: should be (1, 20) inclusive
+    # identifier_columns -> list of column headers related to the athlete's identity (index, ID, name)
+    # data_columns -> list of column headers that contain athletes' data
+    
+    if method == "knn":
+        if (not isinstance(neighbors, int)) or neighbors <= 0 or neighbors > 20:
+            raise Exception("Invalid neighbor argument")
+
+        if not isinstance(identifier_columns, list) or len(identifier_columns) == 0:
+            raise Exception("Invalid identifier_columns argument")
+    
+        if not isinstance(data_columns, list) or len(data_colums) == 0:
+            raise Exception("Invalid data_columns argument")
+    
+        try:
+            df_identifiers = df[identifier_columns]
+            df_modify = df[data_columns]
+        except KeyError:
+            print(f"A column header in identifier_columns or data_columns is not in {df}.")
+        else:
+            df_modify = df_modify.fillna(value=np.nan)
+            df_modify = df_modify[:].values
+    
+            imputer = KNNImputer(n_neighbors=neighbors)
+    
+            df_KNN = pd.DataFrame(imputer.fit_transform(df_modify), columns=data_columns)
+    
+            df_KNN = pd.concat([df_identifiers, df_KNN], axis=1)
+    
+            return df_KNN
+
 
 def remove_outliers(df, method = 'iqr', score_headers: list = None,  **kwargs):
     """
