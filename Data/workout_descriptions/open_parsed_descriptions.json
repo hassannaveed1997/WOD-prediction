@@ -72,9 +72,9 @@
         "description": "Complete as many rounds as possible in 15 minutes of: 19 wall-ball shots, 19-cal. row, Men throw 20-lb. ball to 10-ft. target"
     },
     "19.2": {
-        "goal": "AMRAP",
+        "goal": "For Time",
         "time_cap": 20,
-        "total_reps": null,
+        "total_reps": 430,
         "description": "Beginning on an 8-minute clock, complete as many reps as possible of: 25 toes-to-bars, 50 double-unders, 15 squat cleans (135 lb), 25 toes-to-bars, 50 double-unders, 13 squat cleans (185 lb). If completed before 8 minutes, add 4 minutes to the clock and proceed to: 25 toes-to-bars, 50 double-unders, 11 squat cleans (225 lb). If completed before 12 minutes, add 4 minutes to the clock and proceed to: 25 toes-to-bars, 50 double-unders, 9 squat cleans (275 lb). If completed before 16 minutes, add 4 minutes to the clock and proceed to: 25 toes-to-bars, 50 double-unders, 7 squat cleans (315 lb). Stop at 20 minutes."
     },
     "19.3": {
@@ -186,9 +186,9 @@
         "description": "1-rep-max thruster (from the floor)"
     },
     "23.3": {
-        "goal": "AMRAP",
+        "goal": "For Time",
         "time_cap": 12,
-        "total_reps": null,
+        "total_reps": 292,
         "description": "5 wall walks, 50 double-unders, 15 snatches (weight 1), 5 wall walks, 50 double-unders, 12 snatches (weight 2), *If completed before the 6-minute time cap, add 3 minutes to the time cap and complete: 20 strict handstand push-ups, 50 double-unders, 9 snatches (weight 3), *If completed before the 9-minute time cap, add 3 minutes to the time cap and complete: 20 strict handstand push-ups, 50 double-unders, 6 snatches (weight 4), \u2640 65 lb, 95 lb, 125 lb, 155 lb, \u2642 95 lb, 135 lb, 185 lb, 225 lb"
     },
     
