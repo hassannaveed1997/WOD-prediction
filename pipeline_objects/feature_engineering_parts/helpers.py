@@ -1,13 +1,50 @@
 import pandas as pd
 import numpy as np
 import warnings
+from sklearn.impute import KNNImputer
 
-def fill_missing_values(df, method = 'knn', **kwargs):
-    # TODO: fill missing values
-    if method == 'zero':
-        df.fillna(0, inplace = True)
 
-    return df
+def fill_missing_values(df, method, neighbors = None, identifier_columns = None, data_columns = None, **kwargs):
+
+    # This function will fill in missing values using the KNN algorithm. Assumes the dataset is already cleaned.
+
+    # Parameters
+    # neighbors -> number of neighbors to compare to for KNN algorithm: should be (1, 20) inclusive
+    # identifier_columns -> list of column headers related to the athlete's identity (index, ID, name)
+    # data_columns -> list of column headers that contain athletes' data
+    
+    if method == "knn":
+        if (not isinstance(neighbors, int)) or neighbors <= 0 or neighbors > 20:
+            raise Exception("Invalid neighbor argument")
+
+        if not isinstance(identifier_columns, list) or len(identifier_columns) == 0:
+            raise Exception("Invalid identifier_columns argument")
+    
+        if not isinstance(data_columns, list) or len(data_colums) == 0:
+            raise Exception("Invalid data_columns argument")
+    
+        try:
+            df_identifiers = df[identifier_columns]
+            df_modify = df[data_columns]
+        except KeyError:
+            print(f"A column header in identifier_columns or data_columns is not in {df}.")
+        else:
+            df_modify = df_modify.fillna(value=np.nan)
+            df_modify = df_modify[:].values
+    
+            imputer = KNNImputer(n_neighbors=neighbors)
+    
+            df_KNN = pd.DataFrame(imputer.fit_transform(df_modify), columns=data_columns)
+    
+            df_KNN = pd.concat([df_identifiers, df_KNN], axis=1)
+    
+            return df_KNN
+    if method == "zero":
+        return df.fillna(0)
+    else:
+        raise Exception(f"Invalid method argument for fill_missing_values: {method}")
+    
+
 
 def remove_outliers(df, method = 'iqr', score_headers: list = None,  **kwargs):
     """
@@ -295,32 +332,3 @@ def convert_to_floats(df: pd.DataFrame, descriptions: dict, threshold = .5, scal
 
 
 
-def handle_outliers(df, score_headers = None):
-    """
-    This function will detect outliers in the data. and replace them with missing values
-    """
-    df_modified = df.copy()
-
-    # If score_headers is None, use all columns
-    if score_headers is None:
-        score_headers = df.columns
-        
-    # Sanity check to confirm that the columns are numeric
-    for col in score_headers:
-        if df_modified[col].dtype not in [int, float]:
-            raise ValueError(f"Column {col} is not numeric, convert to numeric first")
-    
-
-    # fill 0 with na first to prevent missing
-    df_modified = df_modified.replace(0, np.nan)
-
-    # find interquartile rang
-    upper_quartiles = df_modified[score_headers].quantile(0.75)
-    lower_quartiles = df_modified[score_headers].quantile(0.25) 
-    iqr = upper_quartiles - lower_quartiles
-
-    # find outliers
-    outliers = (df_modified[score_headers] > (upper_quartiles + 1.5 * iqr)) | (df_modified[score_headers] < (lower_quartiles - 1.5 * iqr))
-    df_modified[outliers] = np.nan
-
-    return df_modified
