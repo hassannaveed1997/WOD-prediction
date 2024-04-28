@@ -131,7 +131,8 @@ def convert_time_cap_workout_to_reps(x, total_reps, time_cap, scale_up=False):
     if (isinstance(x, int)):
         # athlete finished the workout
         if (x >= total_reps):
-                # athlete did not finish the workout -> scale_up
+            # athlete did not finish the workout -> scale_up
+            return x
         else:
             return total_reps * time_cap / x
     # if x is reported as time, then athlete finished workout
