@@ -1,21 +1,12 @@
 import pandas as pd
 from .base import BaseFEPipelineObject
+from .helpers import convert_to_floats, seperate_scaled_workouts
 
-def convert_to_floats(data):
-    # TODO: This is just a placeholder to proceed. We need to migrate the function from modeling.preprocessing to here
-    for col in data.columns:
-        if data[col].dtype == 'object':
-            try:
-                data[col] = data[col].str.replace(' reps','')
-                data[col] = data[col].str.replace(' lbs','')
-                data[col] = pd.to_numeric(data[col], errors='coerce')
-            except ValueError:
-                raise ValueError(f"Could not convert column {col} to float")
-    return data
 
 class OpenResultsFE(BaseFEPipelineObject):
-    def __init__(self,create_description_embeddings = False, **kwargs):
+    def __init__(self,create_description_embeddings = False, scale_up = False, **kwargs):
         self.create_description_embeddings = create_description_embeddings
+        self.scale_up = scale_up
         self.kwargs = kwargs
 
     def melt_data(self, open_data):
@@ -35,7 +26,11 @@ class OpenResultsFE(BaseFEPipelineObject):
         - melt the data into a long format (if applicable). Then each row will represent a single workout, rather than a single athlete.
         - add relevant info from workout descriptions
         """
-        open_data = convert_to_floats(open_data)
+        # seperate out scaled workouts as seperate columns
+        open_data = seperate_scaled_workouts(open_data)
+
+        # convert to floats (instead of reps, lbs time or mixed data types)
+        open_data = convert_to_floats(open_data, workout_descriptions, scale_up = self.scale_up)
 
         open_data = self.melt_data(open_data)
         
