@@ -1,8 +1,9 @@
 from .base import BaseFEPipelineObject
 from .helpers import remove_outliers, fill_missing_values
 
+
 class BenchmarkStatsFE(BaseFEPipelineObject):
-    def __init__(self,remove_outliers: bool = True, missing_method = 'knn', **kwargs):
+    def __init__(self, remove_outliers: bool = True, missing_method="knn", **kwargs):
         self.remove_outliers = remove_outliers
         self.missing_method = missing_method
         self.kwargs = kwargs
@@ -14,16 +15,18 @@ class BenchmarkStatsFE(BaseFEPipelineObject):
         - remove outliers
         """
         # remove unnecessary columns
-        if 'name' in benchmark_data.columns:
-            benchmark_data.drop(columns = ['name'], inplace = True)
-        
+        if "name" in benchmark_data.columns:
+            benchmark_data.drop(columns=["name"], inplace=True)
+
         # remove outliers
         if self.remove_outliers:
             benchmark_data = remove_outliers(benchmark_data, **self.kwargs)
-        
+
         # fill missing values
         if self.missing_method is not None:
-            benchmark_data = fill_missing_values(benchmark_data, method = self.missing_method, **self.kwargs)
+            benchmark_data = fill_missing_values(
+                benchmark_data, method=self.missing_method, **self.kwargs
+            )
 
         # reset index (better for merging downstream)
         benchmark_data = benchmark_data.reset_index()

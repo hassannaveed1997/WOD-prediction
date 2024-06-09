@@ -3,6 +3,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error
 import pandas as pd
 
+
 class BaseModeler:
     def __init__(self):
         self.x_train = None
@@ -13,20 +14,24 @@ class BaseModeler:
 
     def fit(self, X, y):
         raise NotImplementedError
-    
+
     def show_results(self):
         if self.model is None:
-            raise ValueError('Model has not been trained yet')
+            raise ValueError("Model has not been trained yet")
         if self.x_test is None or self.y_test is None:
-            raise ValueError('Data has not been split yet')
-        
+            raise ValueError("Data has not been split yet")
+
         y_pred = self.model.predict(self.x_test)
         # show mean absolute error
-        print('Mean Absolute Error:', round(mean_absolute_error(self.y_test, y_pred), 2))
-    
-    def split_data(self, X, y, method = 'random'):
-        if method == 'random':
-            self.x_train, self.x_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.2)
+        print(
+            "Mean Absolute Error:", round(mean_absolute_error(self.y_test, y_pred), 2)
+        )
+
+    def split_data(self, X, y, method="random"):
+        if method == "random":
+            self.x_train, self.x_test, self.y_train, self.y_test = train_test_split(
+                X, y, test_size=0.2
+            )
 
 
 class RandomForestModel(BaseModeler):
