@@ -1,0 +1,2 @@
+# Description
+This folder contains one off modeling experiments to be shared with the rest of the team. Feel free to put notebooks or scripts under a folder with your name. For other features, please use the examples notebook and update functions under the `pipeline_objects` folder so other teams can use them.
