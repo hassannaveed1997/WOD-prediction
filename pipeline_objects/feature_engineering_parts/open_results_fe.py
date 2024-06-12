@@ -4,7 +4,9 @@ from .helpers import convert_to_floats, seperate_scaled_workouts
 
 
 class OpenResultsFE(BaseFEPipelineObject):
-    def __init__(self, create_description_embeddings=False, scale_up=False, **kwargs):
+    def __init__(
+        self, create_description_embeddings=False, scale_up=False, **kwargs
+    ):
         self.create_description_embeddings = create_description_embeddings
         self.scale_up = scale_up
         self.kwargs = kwargs
@@ -39,7 +41,9 @@ class OpenResultsFE(BaseFEPipelineObject):
         open_data = self.melt_data(open_data)
 
         if self.create_description_embeddings:
-            description_embeddings = self.description_embeddings(workout_descriptions)
+            description_embeddings = self.description_embeddings(
+                workout_descriptions
+            )
             # merge the two datasets
             open_data = pd.merge(
                 open_data, description_embeddings, how="left", on="workout"
