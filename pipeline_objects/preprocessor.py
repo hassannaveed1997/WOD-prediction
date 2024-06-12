@@ -7,10 +7,36 @@ import pandas as pd
 
 
 class DataPreprocessor:
+    """
+    Class for preprocessing data before modeling.
+
+    Args:
+        config (dict): Configuration parameters for the preprocessor.
+
+    Methods:
+        transform(data): Preprocesses the input data and returns the transformed data.
+
+    """
+
     def __init__(self, config):
         self.config = config
 
     def transform(self, data):
+        """
+                Preprocesses the input data and returns the transformed data.
+        `
+                Args:
+                    data (dict): Input data dictionary containing open results and benchmark stats.
+
+                Returns:
+                    dict: Transformed data dictionary containing feature engineered data (X) and target variable (y).
+
+                Raises:
+                    ValueError: If both open results and workout descriptions are not provided.
+                    NotImplementedError: If athlete info transformation is not yet implemented.
+
+        """
+
         fe_data = []
 
         X, y = self.transform_open_results(data)
@@ -42,6 +68,20 @@ class DataPreprocessor:
         return output
 
     def transform_open_results(self, data):
+        """
+        Transforms the open results data.
+
+        Args:
+            data (dict): Input data dictionary containing open results and workout descriptions.
+
+        Returns:
+            tuple: Transformed feature engineered data (X) and target variable (y).
+
+        Raises:
+            ValueError: If open results or workout descriptions are missing in the input data.
+
+        """
+
         if "open_results" not in data or "workout_descriptions" not in data:
             raise ValueError(
                 "Both open results and workout descriptions must be provided to transform open results"
@@ -57,6 +97,17 @@ class DataPreprocessor:
         return X, y
 
     def transform_benchmark_stats(self, data):
+        """
+        Transforms the benchmark stats data.
+
+        Args:
+            data (dict): Input data dictionary containing open results and benchmark stats.
+
+        Returns:
+            pandas.DataFrame: Transformed benchmark stats data.
+
+        """
+
         # filter on intersecting athletes
         index = data["open_results"].index.intersection(
             data["benchmark_stats"].index
