@@ -1,4 +1,7 @@
-from pipeline_objects.feature_engineering_parts import OpenResultsFE, BenchmarkStatsFE
+from pipeline_objects.feature_engineering_parts import (
+    OpenResultsFE,
+    BenchmarkStatsFE,
+)
 from functools import reduce
 import pandas as pd
 
@@ -18,10 +21,14 @@ class DataPreprocessor:
             fe_data.append(benchmark_stats)
 
         if "athlete_info" in self.config:
-            raise NotImplementedError("Athlete info transformation not yet implemented")
+            raise NotImplementedError(
+                "Athlete info transformation not yet implemented"
+            )
 
         # join all feature engineered data together
-        fe_data = reduce(lambda left, right: pd.merge(left, right, how="left"), fe_data)
+        fe_data = reduce(
+            lambda left, right: pd.merge(left, right, how="left"), fe_data
+        )
 
         # one hot encode categorical variables
         for col in fe_data.columns:
@@ -51,7 +58,9 @@ class DataPreprocessor:
 
     def transform_benchmark_stats(self, data):
         # filter on intersecting athletes
-        index = data["open_results"].index.intersection(data["benchmark_stats"].index)
+        index = data["open_results"].index.intersection(
+            data["benchmark_stats"].index
+        )
         benchmark_df = data["benchmark_stats"].loc[index]
 
         benchmark_stats_fe = BenchmarkStatsFE(**self.config["benchmark_stats"])
