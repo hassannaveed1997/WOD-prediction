@@ -8,6 +8,13 @@ class DataLoader:
     """
     A class for loading data for WOD prediction.
 
+    Loads the open results, athlete info (not implemented), workout
+    descriptions, and benchmark stats data into a dictionary with keys:
+        - open_results
+        - athlete_info (not implemented)
+        - workout_descriptions
+        - benchmark_stats
+
     Args:
         root_path (str): The root path where the data is located.
         objects (list): A list of objects to load.
@@ -117,6 +124,13 @@ class DataLoader:
     def load(self):
         """
         Loads the specified data objects.
+
+        Load the data objects specified in the objects attribute to a
+        dictionary with keys:
+            - open_results
+            - athlete_info (not implemented)
+            - workout_descriptions
+            - benchmark_stats
 
         Returns:
             dict: A dictionary containing the loaded data objects.
