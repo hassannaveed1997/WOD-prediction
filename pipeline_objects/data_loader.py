@@ -5,6 +5,26 @@ import json
 
 
 class DataLoader:
+    """
+    A class for loading data for WOD prediction.
+
+    Args:
+        root_path (str): The root path where the data is located.
+        objects (list): A list of objects to load.
+
+    Attributes:
+        root_path (str): The root path where the data is located.
+        objects (list): A list of objects to load.
+
+    Methods:
+        load_open_results: Loads the open results data.
+        load_athlete_info: Loads the athlete info data.
+        load_descriptions: Loads the workout descriptions data.
+        load_benchmark_stats: Loads the benchmark stats data.
+        load: Loads the specified data objects.
+
+    """
+
     def __init__(self, root_path, objects):
         # see if the root path exists
         self.root_path = root_path
@@ -13,7 +33,13 @@ class DataLoader:
         self.objects = objects
 
     def load_open_results(self):
-        # load the open results
+        """
+        Loads the open results data.
+
+        Returns:
+            pandas.DataFrame: The loaded open results data.
+
+        """
         files = os.listdir(self.root_path)
         open_results = {}
         for file in files:
@@ -29,7 +55,8 @@ class DataLoader:
                 if year not in open_results:
                     open_results[year] = []
                 open_results[year].append(df)
-        # for each year, we need to concatenate the results along axis 0 (horizontally)
+        # for each year, we need to concatenate the results along axis 0
+        # (horizontally)
         for year in open_results:
             open_results[year] = pd.concat(open_results[year], axis=0)
 
@@ -38,13 +65,28 @@ class DataLoader:
         return open_results
 
     def load_athlete_info(self):
+        """
+        Loads the athlete info data.
+
+        Returns:
+            None
+
+        """
         # TODO: load the athlete info
         pass
 
     def load_descriptions(self):
+        """
+        Loads the workout descriptions data.
+
+        Returns:
+            dict: The loaded workout descriptions data.
+
+        """
         with open(
             os.path.join(
-                self.root_path, "workout_descriptions/open_parsed_descriptions.json"
+                self.root_path,
+                "workout_descriptions/open_parsed_descriptions.json",
             ),
             "r",
         ) as f:
@@ -52,9 +94,17 @@ class DataLoader:
         return descriptions
 
     def load_benchmark_stats(self):
+        """
+        Loads the benchmark stats data.
+
+        Returns:
+            pandas.DataFrame: The loaded benchmark stats data.
+
+        """
         benchmark_stats = pd.read_csv(
             os.path.join(
-                self.root_path, "benchmark_stats/2023_BenchMarkStats_men3_cleaned.csv"
+                self.root_path,
+                "benchmark_stats/2023_BenchMarkStats_men3_cleaned.csv",
             )
         )
         if "Unnamed: 0" in benchmark_stats.columns:
@@ -65,6 +115,13 @@ class DataLoader:
         return benchmark_stats
 
     def load(self):
+        """
+        Loads the specified data objects.
+
+        Returns:
+            dict: A dictionary containing the loaded data objects.
+
+        """
         data = {}
         if "open_results" in self.objects:
             open_results = self.load_open_results()
@@ -72,7 +129,9 @@ class DataLoader:
 
         # TODO: add for other 3 input sources
         if "athlete_info" in self.objects:
-            raise NotImplementedError("The athlete info is not implemented yet")
+            raise NotImplementedError(
+                "The athlete info is not implemented yet"
+            )
 
         if "descriptions" in self.objects:
             descriptions = self.load_descriptions()
