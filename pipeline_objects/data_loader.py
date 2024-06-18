@@ -28,7 +28,7 @@ class DataLoader:
         load_athlete_info: Loads the athlete info data.
         load_descriptions: Loads the workout descriptions data.
         load_benchmark_stats: Loads the benchmark stats data.
-        load: Loads the specified data objects.
+        load: Loads ALL of the specified data objects.
 
     """
 
@@ -41,7 +41,7 @@ class DataLoader:
 
     def load_open_results(self):
         """
-        Loads the open results data.
+        Loads the open results data into a pandas DataFrame.
 
         Returns:
             pandas.DataFrame: The loaded open results data.
@@ -73,18 +73,70 @@ class DataLoader:
 
     def load_athlete_info(self):
         """
-        Loads the athlete info data.
+        Loads the athlete info data for each year (not implemented).
 
         Returns:
             None
 
+        TODO: Implement this method.
+        TODO: Determine if `name` col should be dropped.
+        TODO: Sort the columns in reverse chronological order by year:
+            .. code-block:: python
+                # Appended to the end of the method before return
+                sorted_cols = sorted(
+                    [
+                        col for col in athlete_info.columns
+                        if col != 'id'
+                    ],
+                    key=lambda x: x.split('.')[0],
+                    reverse=True,
+                )
+                if 'id' in athlete_info.columns:
+                    sorted_cols = ['id'] + sorted_cols
+                athlete_info = athlete_info[sorted_cols]
+
         """
-        # TODO: load the athlete info
-        pass
+
+        files = os.listdir(self.root_path)
+        athlete_info = {}
+        for file in files:
+            if file.endswith("info.csv"):
+                year = file.split("_")[0]
+                df = pd.read_csv(os.path.join(self.root_path, file))
+
+                # Set the index to the 'id' column of the data
+                df.set_index("id", inplace=True)
+                # Drop the 'Unnamed: 0' column-which is just an index
+                # in the original data without a column name-and the
+                # 'name' column-which is not needed.
+                if "Unnamed: 0" in df.columns:
+                    df.drop(columns=["Unnamed: 0"], inplace=True)
+                if "name" in df.columns:
+                    df.drop(columns=["name"], inplace=True)
+                # Prepend the year to each column name, except 'id'
+                df.columns = [
+                    f"{year[-2:]}.{col}" if col != "id" else col
+                    for col in df.columns
+                ]
+                if year not in athlete_info:
+                    athlete_info[year] = []
+                athlete_info[year].append(df)
+
+        # For each year, concatenate the results along axis 0
+        # (vertically) to get the full dataset for that year
+        # TODO: Why are we doing this? Ask Hassan.
+        for year in athlete_info:
+            athlete_info[year] = pd.concat(athlete_info[year], axis=0)
+
+        # Concatenate the results (vertically) to get the full dataset
+        # Essentially,
+        athlete_info = pd.concat(athlete_info.values(), axis=1)
+
+        return athlete_info
 
     def load_descriptions(self):
         """
-        Loads the workout descriptions data.
+        Loads the workout descriptions data into a dictionary.
 
         Returns:
             dict: The loaded workout descriptions data.
@@ -123,14 +175,14 @@ class DataLoader:
 
     def load(self):
         """
-        Loads the specified data objects.
+        Loads the specified data objects into a dictionary.
 
         Load the data objects specified in the objects attribute to a
         dictionary with keys:
-            - open_results
+            - open_results (pandas.DataFrame)
             - athlete_info (not implemented)
-            - workout_descriptions
-            - benchmark_stats
+            - workout_descriptions (dict)
+            - benchmark_stats (pandas.DataFrame)
 
         Returns:
             dict: A dictionary containing the loaded data objects.
@@ -143,9 +195,11 @@ class DataLoader:
 
         # TODO: add for other 3 input sources
         if "athlete_info" in self.objects:
-            raise NotImplementedError(
-                "The athlete info is not implemented yet"
-            )
+            # raise NotImplementedError(
+            #     "The athlete info is not implemented yet"
+            # )
+            athlete_info = self.load_athlete_info()
+            data["athlete_info"] = athlete_info
 
         if "descriptions" in self.objects:
             descriptions = self.load_descriptions()
