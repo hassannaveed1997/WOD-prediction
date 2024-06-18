@@ -23,17 +23,31 @@ class DataPreprocessor:
 
     def transform(self, data):
         """
-                Preprocesses the input data and returns the transformed data.
-        `
-                Args:
-                    data (dict): Input data dictionary containing open results and benchmark stats.
+        Preprocesses the input data and returns the transformed data.
 
-                Returns:
-                    dict: Transformed data dictionary containing feature engineered data (X) and target variable (y).
+        This method does the following:
+            - Transforms the open results data by calling the
+                transform_open_results method.
+            - Transforms the benchmark stats data by calling the
+                transform_benchmark_stats method.
+            TODO: - Transforms the athlete info data (NOT IMPLEMENTED).
+            - One hot encodes categorical variables by calling
+            pd.get_dummies, which creates dummy variables for each
+            categorical variable and drops the original column.
+`
+        Args:
+            data (dict): Input data dictionary containing open results
+            and benchmark stats.
 
-                Raises:
-                    ValueError: If both open results and workout descriptions are not provided.
-                    NotImplementedError: If athlete info transformation is not yet implemented.
+        Returns:
+            dict: Transformed data dictionary containing feature
+            engineered data (X) and target variable (y).
+
+        Raises:
+            ValueError: If both open results and workout descriptions
+            are not provided.
+            NotImplementedError: If athlete info transformation is not
+            yet implemented.
 
         """
 
