@@ -195,9 +195,6 @@ class DataLoader:
 
         # TODO: add for other 3 input sources
         if "athlete_info" in self.objects:
-            # raise NotImplementedError(
-            #     "The athlete info is not implemented yet"
-            # )
             athlete_info = self.load_athlete_info()
             data["athlete_info"] = athlete_info
 
