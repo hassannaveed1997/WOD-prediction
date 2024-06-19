@@ -1,4 +1,4 @@
-from pipeline_objects.feature_engineering_parts import OpenResultsFE, BenchmarkStatsFE
+from wod_predictor.feature_engineering_parts import OpenResultsFE, BenchmarkStatsFE
 from functools import reduce
 import pandas as pd
 
