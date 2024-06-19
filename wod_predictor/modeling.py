@@ -3,10 +3,13 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, mean_absolute_percentage_error
 from .models.helpers import show_breakdown_by_workout
 import pandas as pd
+import numpy as np
 
 
 class BaseModeler:
-    def __init__(self):
+    def __init__(self, meta_data: dict = {}, config: dict = {}):
+        self.meta_data = meta_data
+        self.config = config
         self.x_train = None
         self.y_train = None
         self.x_test = None
@@ -16,7 +19,7 @@ class BaseModeler:
     def fit(self, X, y):
         raise NotImplementedError
 
-    def show_results(self, meta_data=None):
+    def show_results(self):
         if self.model is None:
             raise ValueError("Model has not been trained yet")
         if self.x_test is None or self.y_test is None:
@@ -31,22 +34,37 @@ class BaseModeler:
             "Mean Absolute Percentage Error:",
             round(mean_absolute_percentage_error(self.y_test, y_pred), 2),
         )
-        if meta_data is not None:
-            breakdown = show_breakdown_by_workout(
-                self.x_test, self.y_test, y_pred, meta_data
-            )
+        if 'idx_to_workout_name' in self.meta_data:
+            show_breakdown_by_workout(y_test = self.y_test, y_pred = y_pred, mapping = self.meta_data['idx_to_workout_name'])
 
 
     def split_data(self, X, y, method="random"):
+        test_size = self.config.get("test_size", 0.2)
+        test_index = X.index
+
+        # filter test set
+        if "test_filter" in self.config:
+            if 'idx_to_workout_name' not in self.meta_data:
+                raise KeyError("meta_data must have idx_to_workout_name mapping to use test_filter. Either pass in mapping or set test_filter to None")
+            mapping = self.meta_data['idx_to_workout_name']
+            useable_indices = mapping[mapping.str.contains(self.config['test_filter'], regex = True)].index
+            test_index = test_index.intersection(useable_indices)
+
         if method == "random":
-            self.x_train, self.x_test, self.y_train, self.y_test = train_test_split(
-                X, y, test_size=0.2
-            )
+            # sample from the test flag with value 1
+            test_index = np.random.choice(test_index, int(len(test_index) * test_size), replace=False)
+
+        self.x_train = X.drop(test_index)
+        self.y_train = y.drop(test_index)
+        self.x_test = X.loc[test_index]
+        self.y_test = y.loc[test_index]
     
 class RandomForestModel(BaseModeler):
     def __init__(self, **kwargs):
+        meta_data = kwargs.pop("meta_data", None)
+        config = kwargs.pop("config", None)
         self.kwargs = kwargs
-        super().__init__()
+        super().__init__(meta_data=meta_data, config=config)
 
     def fit(self, X, y):
         # split data
