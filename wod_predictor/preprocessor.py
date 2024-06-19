@@ -1,4 +1,4 @@
-from pipeline_objects.feature_engineering_parts import OpenResultsFE, BenchmarkStatsFE, generate_meta_data
+from wod_predictor.feature_engineering_parts import OpenResultsFE, BenchmarkStatsFE
 from functools import reduce
 import pandas as pd
 
@@ -22,8 +22,7 @@ class DataPreprocessor:
 
         # join all feature engineered data together
         fe_data = reduce(lambda left, right: pd.merge(left, right, how="left"), fe_data)
-        fe_data.index = X.index
-        
+
         # one hot encode categorical variables
         for col in fe_data.columns:
             if fe_data[col].dtype == "object":
@@ -32,11 +31,8 @@ class DataPreprocessor:
                 )
                 fe_data.drop(col, axis=1, inplace=True)
 
-        meta_data = generate_meta_data(fe_data)
-
-        output = {"X": fe_data, "y": y, 'meta_data': meta_data}
+        output = {"X": fe_data, "y": y}
         return output
-
 
     def transform_open_results(self, data):
         if "open_results" not in data or "workout_descriptions" not in data:
