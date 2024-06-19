@@ -128,7 +128,7 @@ class DataLoader:
         for year in athlete_info:
             athlete_info[year] = pd.concat(athlete_info[year], axis=0)
 
-        # Concatenate the results (vertically) to get the full dataset
+        # Concatenate the results (horizontally) to get the full dataset
         # Essentially,
         athlete_info = pd.concat(athlete_info.values(), axis=1)
 
