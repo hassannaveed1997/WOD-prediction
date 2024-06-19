@@ -1,0 +1,15 @@
+beautifulsoup4
+jsonschema
+matplotlib
+numpy
+openai
+pandas
+plotly~=5.0
+pydantic
+requests
+scikit-learn~=1.4
+scipy
+seaborn
+torch~=2.2, <3.0
+torchmetrics
+tqdm
