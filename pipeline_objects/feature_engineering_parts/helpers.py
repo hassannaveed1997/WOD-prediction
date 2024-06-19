@@ -335,9 +335,7 @@ def convert_to_floats(
 
         # if workout is for REPS, we should be fine
         if descriptions[workout_name_base]["goal"].lower() in ["reps", "amrap"]:
-            df_modified[workout_name] = df_modified[workout_name].astype(
-                int, errors="ignore"
-            )
+            df_modified[workout_name] = pd.to_numeric(df_modified[workout_name], errors="ignore")
             # TODO: handle any edge cases here
 
         elif descriptions[workout_name_base]["goal"].lower() == "for time":

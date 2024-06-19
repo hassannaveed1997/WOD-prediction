@@ -1,6 +1,7 @@
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import mean_absolute_error, mean_absolute_percentage_error
+from .models.helpers import show_breakdown_by_workout
 import pandas as pd
 
 
@@ -15,7 +16,7 @@ class BaseModeler:
     def fit(self, X, y):
         raise NotImplementedError
 
-    def show_results(self):
+    def show_results(self, meta_data=None):
         if self.model is None:
             raise ValueError("Model has not been trained yet")
         if self.x_test is None or self.y_test is None:
@@ -26,14 +27,22 @@ class BaseModeler:
         print(
             "Mean Absolute Error:", round(mean_absolute_error(self.y_test, y_pred), 2)
         )
+        print(
+            "Mean Absolute Percentage Error:",
+            round(mean_absolute_percentage_error(self.y_test, y_pred), 2),
+        )
+        if meta_data is not None:
+            breakdown = show_breakdown_by_workout(
+                self.x_test, self.y_test, y_pred, meta_data
+            )
+
 
     def split_data(self, X, y, method="random"):
         if method == "random":
             self.x_train, self.x_test, self.y_train, self.y_test = train_test_split(
                 X, y, test_size=0.2
             )
-
-
+    
 class RandomForestModel(BaseModeler):
     def __init__(self, **kwargs):
         self.kwargs = kwargs
@@ -47,5 +56,6 @@ class RandomForestModel(BaseModeler):
         self.model = RandomForestRegressor(**self.kwargs)
         self.model.fit(self.x_train, self.y_train)
 
-    def show_results(self):
-        super().show_results()
+    def show_results(self, **kwargs):
+        super().show_results(**kwargs)
+
