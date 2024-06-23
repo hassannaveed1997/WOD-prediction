@@ -1,13 +1,56 @@
-from wod_predictor.feature_engineering_parts import OpenResultsFE, BenchmarkStatsFE
+from pipeline_objects.feature_engineering_parts import (
+    OpenResultsFE,
+    BenchmarkStatsFE,
+)
 from functools import reduce
 import pandas as pd
 
 
 class DataPreprocessor:
+    """
+    Class for preprocessing data before modeling.
+
+    Args:
+        config (dict): Configuration parameters for the preprocessor.
+
+    Methods:
+        transform(data): Preprocesses the input data and returns the transformed data.
+
+    """
+
     def __init__(self, config):
         self.config = config
 
     def transform(self, data):
+        """
+        Preprocesses the input data and returns the transformed data.
+
+        This method does the following:
+            - Transforms the open results data by calling the
+                transform_open_results method.
+            - Transforms the benchmark stats data by calling the
+                transform_benchmark_stats method.
+            TODO: - Transforms the athlete info data (NOT IMPLEMENTED).
+            - One hot encodes categorical variables by calling
+            pd.get_dummies, which creates dummy variables for each
+            categorical variable and drops the original column.
+`
+        Args:
+            data (dict): Input data dictionary containing open results
+            and benchmark stats.
+
+        Returns:
+            dict: Transformed data dictionary containing feature
+            engineered data (X) and target variable (y).
+
+        Raises:
+            ValueError: If both open results and workout descriptions
+            are not provided.
+            NotImplementedError: If athlete info transformation is not
+            yet implemented.
+
+        """
+
         fe_data = []
 
         X, y = self.transform_open_results(data)
@@ -18,10 +61,14 @@ class DataPreprocessor:
             fe_data.append(benchmark_stats)
 
         if "athlete_info" in self.config:
-            raise NotImplementedError("Athlete info transformation not yet implemented")
+            raise NotImplementedError(
+                "Athlete info transformation not yet implemented"
+            )
 
         # join all feature engineered data together
-        fe_data = reduce(lambda left, right: pd.merge(left, right, how="left"), fe_data)
+        fe_data = reduce(
+            lambda left, right: pd.merge(left, right, how="left"), fe_data
+        )
 
         # one hot encode categorical variables
         for col in fe_data.columns:
@@ -35,6 +82,20 @@ class DataPreprocessor:
         return output
 
     def transform_open_results(self, data):
+        """
+        Transforms the open results data.
+
+        Args:
+            data (dict): Input data dictionary containing open results and workout descriptions.
+
+        Returns:
+            tuple: Transformed feature engineered data (X) and target variable (y).
+
+        Raises:
+            ValueError: If open results or workout descriptions are missing in the input data.
+
+        """
+
         if "open_results" not in data or "workout_descriptions" not in data:
             raise ValueError(
                 "Both open results and workout descriptions must be provided to transform open results"
@@ -50,8 +111,21 @@ class DataPreprocessor:
         return X, y
 
     def transform_benchmark_stats(self, data):
+        """
+        Transforms the benchmark stats data.
+
+        Args:
+            data (dict): Input data dictionary containing open results and benchmark stats.
+
+        Returns:
+            pandas.DataFrame: Transformed benchmark stats data.
+
+        """
+
         # filter on intersecting athletes
-        index = data["open_results"].index.intersection(data["benchmark_stats"].index)
+        index = data["open_results"].index.intersection(
+            data["benchmark_stats"].index
+        )
         benchmark_df = data["benchmark_stats"].loc[index]
 
         benchmark_stats_fe = BenchmarkStatsFE(**self.config["benchmark_stats"])
