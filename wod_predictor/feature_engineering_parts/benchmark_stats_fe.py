@@ -28,7 +28,7 @@ class BenchmarkStatsFE(BaseFEPipelineObject):
                 benchmark_data, method=self.missing_method, **self.kwargs
             )
 
-        # reset index (better for merging downstream)
-        benchmark_data = benchmark_data.reset_index()
+        # keep athlete_id as index
+        benchmark_data['athlete_id'] = benchmark_data.index
 
         return benchmark_data

@@ -1,4 +1,4 @@
-from wod_predictor.feature_engineering_parts import OpenResultsFE, BenchmarkStatsFE, generate_meta_data
+from wod_predictor.feature_engineering_parts import OpenResultsFE, BenchmarkStatsFE
 from functools import reduce
 import pandas as pd
 
@@ -6,6 +6,7 @@ import pandas as pd
 class DataPreprocessor:
     def __init__(self, config):
         self.config = config
+        self.meta_data = {}
 
     def transform(self, data):
         fe_data = []
@@ -21,7 +22,8 @@ class DataPreprocessor:
             raise NotImplementedError("Athlete info transformation not yet implemented")
 
         # join all feature engineered data together
-        fe_data = reduce(lambda left, right: pd.merge(left, right, how="left"), fe_data)
+        fe_data = reduce(lambda left, right: pd.merge(left, right, on = 'athlete_id', how="left"), fe_data)
+        fe_data.drop(columns=["athlete_id"], inplace=True)
         fe_data.index = X.index
 
         # one hot encode categorical variables
@@ -32,9 +34,8 @@ class DataPreprocessor:
                 )
                 fe_data.drop(col, axis=1, inplace=True)
 
-        meta_data = generate_meta_data(fe_data)
 
-        output = {"X": fe_data, "y": y, 'meta_data': meta_data}
+        output = {"X": fe_data, "y": y, 'meta_data': self.meta_data}
         return output
 
     def transform_open_results(self, data):
@@ -49,6 +50,7 @@ class DataPreprocessor:
         )
         y = open_results["score"]
         X = open_results.drop(columns=["score"])
+        self.meta_data.update(open_results_fe.meta_data)
 
         return X, y
 
