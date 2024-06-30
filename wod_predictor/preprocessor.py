@@ -1,5 +1,6 @@
 from wod_predictor.feature_engineering_parts import OpenResultsFE, BenchmarkStatsFE
 from functools import reduce
+from .constants import Constants as c
 import pandas as pd
 
 
@@ -22,8 +23,8 @@ class DataPreprocessor:
             raise NotImplementedError("Athlete info transformation not yet implemented")
 
         # join all feature engineered data together
-        fe_data = reduce(lambda left, right: pd.merge(left, right, on = 'athlete_id', how="left"), fe_data)
-        fe_data.drop(columns=["athlete_id"], inplace=True)
+        fe_data = reduce(lambda left, right: pd.merge(left, right, on = c.athlete_id_col, how="left"), fe_data)
+        fe_data.drop(columns=[c.athlete_id_col], inplace=True)
         fe_data.index = X.index
 
         # one hot encode categorical variables

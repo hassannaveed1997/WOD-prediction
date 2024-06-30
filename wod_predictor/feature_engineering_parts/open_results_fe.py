@@ -1,7 +1,7 @@
 import pandas as pd
 from .base import BaseFEPipelineObject
 from .helpers import convert_to_floats, seperate_scaled_workouts
-
+from ..constants import Constants as c
 
 class OpenResultsFE(BaseFEPipelineObject):
     def __init__(self, create_description_embeddings=False, scale_up=False, **kwargs):
@@ -19,7 +19,7 @@ class OpenResultsFE(BaseFEPipelineObject):
         open_data_melted = open_data_melted.dropna(subset=["score"])
 
         # recreate index
-        open_data_melted['athlete_id'] = open_data_melted.index
+        open_data_melted[c.athlete_id_col] = open_data_melted.index
         open_data_melted.index = self.create_index(
             open_data_melted.index, open_data_melted["workout"]
         )

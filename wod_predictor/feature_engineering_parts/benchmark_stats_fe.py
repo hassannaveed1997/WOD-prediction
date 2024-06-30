@@ -1,6 +1,6 @@
 from .base import BaseFEPipelineObject
 from .helpers import remove_outliers, fill_missing_values
-
+from ..constants import Constants as c
 
 class BenchmarkStatsFE(BaseFEPipelineObject):
     def __init__(self, remove_outliers: bool = True, missing_method="knn", **kwargs):
@@ -29,6 +29,6 @@ class BenchmarkStatsFE(BaseFEPipelineObject):
             )
 
         # keep athlete_id as index
-        benchmark_data['athlete_id'] = benchmark_data.index
+        benchmark_data[c.athlete_id_col] = benchmark_data.index
 
         return benchmark_data
