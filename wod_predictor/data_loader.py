@@ -1,7 +1,8 @@
-import pandas as pd
-import numpy as np
-import os
 import json
+import os
+
+import numpy as np
+import pandas as pd
 
 
 class DataLoader:
@@ -78,9 +79,8 @@ class DataLoader:
         Returns:
             None
 
-        TODO: Implement this method.
-        TODO: Determine if `name` col should be dropped.
         TODO: Sort the columns in reverse chronological order by year:
+        TODO: (Maybe this should go in the feature engineering module)
             .. code-block:: python
                 # Appended to the end of the method before return
                 sorted_cols = sorted(
@@ -104,15 +104,12 @@ class DataLoader:
                 year = file.split("_")[0]
                 df = pd.read_csv(os.path.join(self.root_path, file))
 
-                # Set the index to the 'id' column of the data
                 df.set_index("id", inplace=True)
                 # Drop the 'Unnamed: 0' column-which is just an index
-                # in the original data without a column name-and the
-                # 'name' column-which is not needed.
+                # in the original data without a column name
                 if "Unnamed: 0" in df.columns:
                     df.drop(columns=["Unnamed: 0"], inplace=True)
-                if "name" in df.columns:
-                    df.drop(columns=["name"], inplace=True)
+
                 # Prepend the year to each column name, except 'id'
                 df.columns = [
                     f"{year[-2:]}.{col}" if col != "id" else col
@@ -124,7 +121,7 @@ class DataLoader:
 
         # For each year, concatenate the results along axis 0
         # (vertically) to get the full dataset for that year
-        # TODO: Why are we doing this? Ask Hassan.
+        #  This is for potential multiple files that have the same year
         for year in athlete_info:
             athlete_info[year] = pd.concat(athlete_info[year], axis=0)
 
