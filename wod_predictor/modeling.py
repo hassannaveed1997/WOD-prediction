@@ -34,9 +34,26 @@ class BaseModeler:
             "Mean Absolute Percentage Error:",
             round(mean_absolute_percentage_error(self.y_test, y_pred), 2),
         )
-        if 'idx_to_workout_name' in self.meta_data:
-            show_breakdown_by_workout(y_test = self.y_test, y_pred = y_pred, mapping = self.meta_data['idx_to_workout_name'])
 
+        if 'idx_to_workout_name' in self.meta_data and 'idx_to_athlete_id' in self.meta_data:
+            y_test_unstacked = self.unstack_series(self.y_test)
+            y_pred_unstacked = self.unstack_series(pd.Series(y_pred, index = self.y_test.index, name='score'))
+
+            # reverse the scaling
+            if 'scaler' in self.meta_data:
+                y_test_unstacked = self.meta_data['scaler'].reverse(y_test_unstacked)
+                y_pred_unstacked = self.meta_data['scaler'].reverse(y_pred_unstacked)
+
+            show_breakdown_by_workout(y_pred_unstacked, y_test_unstacked)
+
+    def unstack_series(self, series):
+        """
+        Unstack a series with a multiindex
+        """
+        df = pd.DataFrame(series)
+        df['workout_name'] = df.index.map(self.meta_data['idx_to_workout_name'])
+        df['athlete_id'] = df.index.map(self.meta_data['idx_to_athlete_id'])
+        return df.pivot(columns='workout_name', values='score', index = 'athlete_id')
 
     def split_data(self, X, y, method="random"):
         test_size = self.config.get("test_size", 0.2)
