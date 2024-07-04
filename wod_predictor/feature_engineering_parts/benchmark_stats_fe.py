@@ -3,7 +3,22 @@ from .helpers import remove_outliers, fill_missing_values
 
 
 class BenchmarkStatsFE(BaseFEPipelineObject):
-    def __init__(self, remove_outliers: bool = True, missing_method="knn", **kwargs):
+    """
+    Feature engineering pipeline object for benchmark statistics.
+
+    Args:
+        remove_outliers (bool, optional): Flag indicating whether to remove outliers. Defaults to True.
+        missing_method (str, optional): Method for filling missing values. Defaults to "knn".
+        **kwargs: Additional keyword arguments to be passed.
+
+    Methods:
+        transform(benchmark_data): Performs operations on the benchmark data.
+
+    """
+
+    def __init__(
+        self, remove_outliers: bool = True, missing_method="knn", **kwargs
+    ):
         self.remove_outliers = remove_outliers
         self.missing_method = missing_method
         self.kwargs = kwargs
@@ -13,6 +28,13 @@ class BenchmarkStatsFE(BaseFEPipelineObject):
         This function is intended to perform a few operations:
         - fill missing values
         - remove outliers
+
+        Args:
+            benchmark_data (DataFrame): The benchmark data to be transformed.
+
+        Returns:
+            DataFrame: The transformed benchmark data.
+
         """
         # remove unnecessary columns
         if "name" in benchmark_data.columns:
