@@ -1,9 +1,12 @@
-from pipeline_objects.feature_engineering_parts import (
-    OpenResultsFE,
-    BenchmarkStatsFE,
-)
 from functools import reduce
+
 import pandas as pd
+
+from wod_predictor.feature_engineering_parts import (
+    AthleteInfoFE,  # TODO: Implement this class
+    BenchmarkStatsFE,
+    OpenResultsFE,
+)
 
 
 class DataPreprocessor:
@@ -14,7 +17,8 @@ class DataPreprocessor:
         config (dict): Configuration parameters for the preprocessor.
 
     Methods:
-        transform(data): Preprocesses the input data and returns the transformed data.
+        transform(data): Preprocesses the input data and returns the
+        transformed data.
 
     """
 
@@ -23,31 +27,26 @@ class DataPreprocessor:
 
     def transform(self, data):
         """
-        Preprocesses the input data and returns the transformed data.
+                Preprocesses the input data and returns the transformed data.
 
-        This method does the following:
-            - Transforms the open results data by calling the
-                transform_open_results method.
-            - Transforms the benchmark stats data by calling the
-                transform_benchmark_stats method.
-            TODO: - Transforms the athlete info data (NOT IMPLEMENTED).
-            - One hot encodes categorical variables by calling
-            pd.get_dummies, which creates dummy variables for each
-            categorical variable and drops the original column.
-`
-        Args:
-            data (dict): Input data dictionary containing open results
-            and benchmark stats.
+                This method transforms input data by calling
+                corresponding methods and concatenating the results.
 
-        Returns:
-            dict: Transformed data dictionary containing feature
-            engineered data (X) and target variable (y).
+                Also one hot encodes categorical variables.
 
-        Raises:
-            ValueError: If both open results and workout descriptions
-            are not provided.
-            NotImplementedError: If athlete info transformation is not
-            yet implemented.
+                TODO: - Transforms the athlete info data (NOT IMPLEMENTED).
+        `
+                Args:
+                    data (dict): Input data dictionary containing open results
+                    and benchmark stats.
+
+                Returns:
+                    dict: Transformed data dictionary containing feature
+                    engineered data (X) and target variable (y).
+
+                Raises:
+                    ValueError: If both open results and workout descriptions
+                    are not provided.
 
         """
 
@@ -61,9 +60,8 @@ class DataPreprocessor:
             fe_data.append(benchmark_stats)
 
         if "athlete_info" in self.config:
-            raise NotImplementedError(
-                "Athlete info transformation not yet implemented"
-            )
+            athlete_info = self.transform_athlete_info(data)
+            fe_data.append(athlete_info)
 
         # join all feature engineered data together
         fe_data = reduce(
@@ -94,6 +92,9 @@ class DataPreprocessor:
         Raises:
             ValueError: If open results or workout descriptions are missing in the input data.
 
+        TODO: Shouldn't we filter on intersection with benchmark stats
+        TODO: for consistency? I know open_results is much larger right now,
+        TODO: but it seems like a good practice to filter on the intersection.
         """
 
         if "open_results" not in data or "workout_descriptions" not in data:
@@ -131,3 +132,33 @@ class DataPreprocessor:
         benchmark_stats_fe = BenchmarkStatsFE(**self.config["benchmark_stats"])
         benchmark_stats = benchmark_stats_fe.transform(benchmark_df)
         return benchmark_stats
+
+    def transform_athlete_info(self, data):
+        """
+        TODO: Implement this method fully.
+        TODO: Verify/fully implement AthleteInfoFE class.
+
+        Transforms the athlete info data.
+
+        Args:
+            data (dict): Input data dictionary containing athlete info.
+
+        Returns:
+            pandas.DataFrame: Transformed athlete info data.
+
+        Raises:
+            NotImplementedError: If the method is not implemented
+
+        TODO: Intersection with benchmark stats + open results?
+        """
+
+        # filter on intersecting athletes
+        index = data["open_results"].index.intersection(
+            data["athlete_info"].index
+        )
+        athlete_info_df = data["athlete_info"].loc[index]
+
+        athlete_info_fe = AthleteInfoFE(**self.config["athlete_info"])
+        athlete_info = athlete_info_fe.transform(athlete_info_df)
+
+        return athlete_info
