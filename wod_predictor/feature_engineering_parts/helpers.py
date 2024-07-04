@@ -64,62 +64,6 @@ def fill_missing_knn(df, neighbors, data_columns=[]):
     return df_KNN
 
 
-def remove_outliers(df, method="iqr", score_headers: list = None, **kwargs):
-    """
-    This function will detect outliers in the data. and replace them with missing values
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        The input dataframe
-
-    method : str
-        The method to use to detect outliers. Currently only 'iqr' is supported
-
-    score_headers : list
-        The columns to check for outliers. If None, all numeric columns will be checked
-
-    Returns
-    -------
-    df_modified : pd.DataFrame
-        The modified dataframe with outliers replaced with missing values
-    """
-    # sanity check on inputs
-    SUPPORTED_METHODS = ["iqr"]
-    if method not in SUPPORTED_METHODS:  # add any more methods here
-        raise ValueError(
-            f"Method {method} is not supported for outlier detection. Please use one of the following: {SUPPORTED_METHODS}"
-        )
-
-    df_modified = df.copy()
-
-    # If score_headers is None, use all columns thst are numeric
-    if score_headers is None:
-        score_headers = df.select_dtypes(include=["int", "float"]).columns
-
-    # Sanity check to confirm that the columns are numeric
-    for col in score_headers:
-        if df_modified[col].dtype not in [int, float]:
-            raise ValueError(f"Column {col} is not numeric, convert to numeric first")
-
-    # fill 0 with na first to prevent skewing the results
-    df_modified = df_modified.replace(0, np.nan)
-
-    # find interquartile range
-    if method == "iqr":
-        upper_quartiles = df_modified[score_headers].quantile(0.75)
-        lower_quartiles = df_modified[score_headers].quantile(0.25)
-        iqr = upper_quartiles - lower_quartiles
-
-        # find outliers
-        outliers = (df_modified[score_headers] > (upper_quartiles + 1.5 * iqr)) | (
-            df_modified[score_headers] < (lower_quartiles - 1.5 * iqr)
-        )
-        df_modified[outliers] = np.nan
-
-    return df_modified
-
-
 def convert_units(df, type, columns=None):
     """
     Helper function to convert units from metric to imperial
@@ -191,7 +135,7 @@ def seperate_scaled_workouts(df, columns=None):
     pd.DataFrame
         The dataframe with additional columns for the scaled and foundation workouts
     """
-    df.copy()
+    df = df.copy()
     if columns is None:
         columns = [
             col for col in df.columns if "." in col
