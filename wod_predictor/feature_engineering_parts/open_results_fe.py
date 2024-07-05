@@ -53,7 +53,7 @@ class OpenResultsFE(BaseFEPipelineObject):
             raise NotImplementedError
         else:
             temp_df = seperate_scaled_workouts(open_data)
-            self.columns += list('workout_'+ temp_df.columns)
+            self.columns += list(temp_df.columns)
 
         return
 
@@ -91,11 +91,11 @@ class OpenResultsFE(BaseFEPipelineObject):
                 if col not in workout_dummies.columns:
                     workout_dummies[col] = 0
             workout_dummies = workout_dummies[self.columns]
+            workout_dummies.columns = [c.workout_col_prefix + col for col in workout_dummies.columns] 
 
             # add back
             open_data.drop(columns=["workout"], inplace=True)
             open_data = pd.concat([open_data, workout_dummies], axis=1)
-        
 
         return open_data
     
