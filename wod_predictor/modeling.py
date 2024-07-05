@@ -7,72 +7,57 @@ import numpy as np
 
 
 class BaseModeler:
-    def __init__(self, meta_data: dict = {}, config: dict = {}):
-        self.meta_data = meta_data
+    def __init__(self, config: dict = {}):
         self.config = config
         self.x_train = None
         self.y_train = None
         self.x_test = None
         self.y_test = None
+        self.y_pred = None
         self.model = None
 
     def fit(self, X, y):
         raise NotImplementedError
+    
+    def predict(self, X):
+        raise NotImplementedError
 
-    def show_results(self):
-        if self.model is None:
-            raise ValueError("Model has not been trained yet")
-        if self.x_test is None or self.y_test is None:
-            raise ValueError("Data has not been split yet")
-
-        y_pred = self.model.predict(self.x_test)
+    def show_results(self, y_test, meta_data = {}):
+        if self.y_pred is None:
+            raise ValueError("No predictions to show, plase train model")
+        
+        self.y_test = y_test
         # show mean absolute error
         print(
-            "Mean Absolute Error:", round(mean_absolute_error(self.y_test, y_pred), 2)
+            "Mean Absolute Error:", round(mean_absolute_error(self.y_test, self.y_pred), 2)
         )
         print(
             "Mean Absolute Percentage Error:",
-            round(mean_absolute_percentage_error(self.y_test, y_pred), 2),
+            round(mean_absolute_percentage_error(self.y_test, self.y_pred), 2),
         )
-        if 'idx_to_workout_name' in self.meta_data:
-            show_breakdown_by_workout(y_test = self.y_test, y_pred = y_pred, mapping = self.meta_data['idx_to_workout_name'])
+        if 'idx_to_workout_name' in meta_data:
+            show_breakdown_by_workout(y_test = self.y_test, y_pred = self.y_pred, mapping = meta_data['idx_to_workout_name'])
 
-
-    def split_data(self, X, y, method="random"):
-        test_size = self.config.get("test_size", 0.2)
-        test_index = X.index
-
-        # filter test set
-        if "test_filter" in self.config:
-            if 'idx_to_workout_name' not in self.meta_data:
-                raise KeyError("meta_data must have idx_to_workout_name mapping to use test_filter. Either pass in mapping or set test_filter to None")
-            mapping = self.meta_data['idx_to_workout_name']
-            useable_indices = mapping[mapping.str.contains(self.config['test_filter'], regex = True)].index
-            test_index = test_index.intersection(useable_indices)
-
-        if method == "random":
-            # sample from the test flag with value 1
-            test_index = np.random.choice(test_index, int(len(test_index) * test_size), replace=False)
-
-        self.x_train = X.drop(test_index)
-        self.y_train = y.drop(test_index)
-        self.x_test = X.loc[test_index]
-        self.y_test = y.loc[test_index]
     
 class RandomForestModel(BaseModeler):
     def __init__(self, **kwargs):
-        meta_data = kwargs.pop("meta_data", None)
         config = kwargs.pop("config", None)
         self.kwargs = kwargs
-        super().__init__(meta_data=meta_data, config=config)
+        super().__init__(config=config)
 
     def fit(self, X, y):
         # split data
-        self.split_data(X, y)
+        self.x_train = X
+        self.y_train = y
 
         # fit model
         self.model = RandomForestRegressor(**self.kwargs)
         self.model.fit(self.x_train, self.y_train)
+
+    def predict(self, X):
+        self.x_test = X
+        self.y_pred = self.model.predict(X)
+        return self.y_pred
 
     def show_results(self, **kwargs):
         super().show_results(**kwargs)

@@ -1,10 +1,12 @@
 import pandas as pd
+import numpy as np
 from .base import BaseFEPipelineObject
 from .helpers import convert_to_floats, seperate_scaled_workouts
 from ..constants import Constants as c
 
 class OpenResultsFE(BaseFEPipelineObject):
     def __init__(self, create_description_embeddings=False, scale_up=False, **kwargs):
+        self.columns = []
         self.create_description_embeddings = create_description_embeddings
         self.scale_up = scale_up
         self.kwargs = kwargs
@@ -41,6 +43,19 @@ class OpenResultsFE(BaseFEPipelineObject):
 
     def description_embeddings(self):
         raise NotImplementedError
+    
+    def fit(self, open_data, workout_descriptions=None):
+        """
+        Initialize any transformers for later use in transform
+        """
+        # get a list of all possible columns
+        if self.create_description_embeddings:
+            raise NotImplementedError
+        else:
+            temp_df = seperate_scaled_workouts(open_data)
+            self.columns += list(temp_df.columns)
+
+        return
 
     def transform(self, open_data, workout_descriptions=None):
         """
@@ -68,6 +83,19 @@ class OpenResultsFE(BaseFEPipelineObject):
             open_data = pd.merge(
                 open_data, description_embeddings, how="left", on="workout"
             )
+        else:
+            # one hot encode the workouts
+            workout_dummies = pd.get_dummies(open_data["workout"])
+            # ensure that the columns are in the same order
+            for col in self.columns:
+                if col not in workout_dummies.columns:
+                    workout_dummies[col] = 0
+            workout_dummies = workout_dummies[self.columns]
+            workout_dummies.columns = [c.workout_col_prefix + col for col in workout_dummies.columns] 
+
+            # add back
+            open_data.drop(columns=["workout"], inplace=True)
+            open_data = pd.concat([open_data, workout_dummies], axis=1)
 
         return open_data
     
