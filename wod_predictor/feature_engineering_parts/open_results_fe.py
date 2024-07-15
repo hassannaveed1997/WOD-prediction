@@ -1,14 +1,24 @@
 import pandas as pd
 import numpy as np
+import numpy as np
 from .base import BaseFEPipelineObject
 from .helpers import convert_to_floats, seperate_scaled_workouts
 from ..constants import Constants as c
+from .normalization import QuantileScaler, StandardScalerByWod
+
 
 class OpenResultsFE(BaseFEPipelineObject):
-    def __init__(self, create_description_embeddings=False, scale_up=False, **kwargs):
+    def __init__(
+        self,
+        create_description_embeddings=False,
+        scale_up=False,
+        scale_method=None,
+        **kwargs
+    ):
         self.columns = []
         self.create_description_embeddings = create_description_embeddings
         self.scale_up = scale_up
+        self.scaler = self.initialize_scaler(scale_method)
         self.kwargs = kwargs
 
         super().__init__()
@@ -25,35 +35,43 @@ class OpenResultsFE(BaseFEPipelineObject):
         open_data_melted.index = self.create_index(
             open_data_melted.index, open_data_melted["workout"]
         )
+        self.meta_data["idx_to_athlete_id"] = open_data_melted[c.athlete_id_col]
         return open_data_melted
-    
+
     @staticmethod
     def create_index(athlete_ids, workout_ids):
         """
         creates new index post melting with athlete id and workout id concatenated
         """
-        #make the names smaller
+        # make the names smaller
         workout_ids = workout_ids.str.replace("_scaled", "s")
         workout_ids = workout_ids.str.replace("_foundation", "f")
         workout_ids = workout_ids.str.replace(".", "_")
 
-        #concatenate the two
+        # concatenate the two
         index = athlete_ids.astype(str) + "_" + workout_ids
         return index
 
     def description_embeddings(self):
         raise NotImplementedError
-    
+
     def fit(self, open_data, workout_descriptions=None):
         """
         Initialize any transformers for later use in transform
         """
         # get a list of all possible columns
+        temp_df = seperate_scaled_workouts(open_data)
         if self.create_description_embeddings:
             raise NotImplementedError
         else:
-            temp_df = seperate_scaled_workouts(open_data)
+            # convert to floats (instead of reps, lbs time or mixed data types)
             self.columns += list(temp_df.columns)
+
+        # fit normalization methods
+        temp_df = convert_to_floats(
+            temp_df, workout_descriptions, scale_up=self.scale_up
+        )
+        self.scaler.fit(temp_df)
 
         return
 
@@ -72,6 +90,10 @@ class OpenResultsFE(BaseFEPipelineObject):
             open_data, workout_descriptions, scale_up=self.scale_up
         )
 
+        # TODO: normalize data here
+        open_data = self.scaler.transform(open_data)
+
+        # convert to percentiles (if requested)
         open_data = self.melt_data(open_data)
 
         # store mapping from melted data
@@ -91,16 +113,19 @@ class OpenResultsFE(BaseFEPipelineObject):
                 if col not in workout_dummies.columns:
                     workout_dummies[col] = 0
             workout_dummies = workout_dummies[self.columns]
-            workout_dummies.columns = [c.workout_col_prefix + col for col in workout_dummies.columns] 
+            workout_dummies.columns = [
+                c.workout_col_prefix + col for col in workout_dummies.columns
+            ]
 
             # add back
             open_data.drop(columns=["workout"], inplace=True)
             open_data = pd.concat([open_data, workout_dummies], axis=1)
 
         return open_data
-    
+
     def create_meta_data(self, df):
-        self.meta_data['idx_to_workout_name'] = self.get_workout_name_mapping(df)
+        self.meta_data["idx_to_workout_name"] = self.get_workout_name_mapping(df)
+        self.meta_data["scaler"] = self.scaler
         return
 
     @staticmethod
@@ -108,8 +133,21 @@ class OpenResultsFE(BaseFEPipelineObject):
         workout_cols = data.columns[data.columns.str.contains("workout")]
 
         if len(workout_cols) == 1:
-            workout_name_mapping = "workout_"+ data[workout_cols[0]]
+            workout_name_mapping = c.workout_col_prefix + data[workout_cols[0]]
         else:
             # get argmax
             workout_name_mapping = data[workout_cols].idxmax(axis=1)
         return workout_name_mapping
+
+    def initialize_scaler(self, scale_method):
+        if scale_method is None:
+            return None
+        elif scale_method == "quantile":
+            scaler = QuantileScaler()
+        elif scale_method == "standard":
+            scaler = StandardScalerByWod()
+        else:
+            raise ValueError(
+                "Invalid scaling method. Must be either percentile or standard."
+            )
+        return scaler
