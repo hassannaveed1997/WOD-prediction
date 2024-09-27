@@ -1,6 +1,6 @@
 import pandas as pd
 from .base import BaseFEPipelineObject
-from .helpers import fill_missing_values, remove_outliers
+from .helpers import fill_missing_values
 
 
 class AthleteInfoFE(BaseFEPipelineObject):
@@ -11,10 +11,9 @@ class AthleteInfoFE(BaseFEPipelineObject):
     """
 
     def __init__(
-        self, remove_outliers: bool = True, missing_method="knn", **kwargs
+        self, missing_method="zeros", **kwargs
     ):
         # raise NotImplementedError("Athlete info FE class not yet implemented")
-        self.remove_outliers = remove_outliers
         self.missing_method = missing_method
         self.kwargs = kwargs
 
@@ -38,12 +37,7 @@ class AthleteInfoFE(BaseFEPipelineObject):
         if "name" in athlete_info_data.columns:
             athlete_info_data.drop(columns=["name"], inplace=True)
 
-        # remove outliers
-        if self.remove_outliers:
-            athlete_info_data = remove_outliers(
-                athlete_info_data, **self.kwargs
-            )
-
+        # TODO: remove outliers
         # fill missing values
         if self.missing_method is not None:
             athlete_info_data = fill_missing_values(

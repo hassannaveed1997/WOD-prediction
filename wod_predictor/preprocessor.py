@@ -37,7 +37,7 @@ class DataPreprocessor:
             self.benchmark_fe_transformer.fit(data["benchmark_stats"])
 
         if "athlete_info" in self.config:
-            raise NotImplementedError("Athlete info transformation not yet implemented")
+            raise NotImplementedError("Athlete info fit not yet implemented")
         
         # TODO: maintain a list of columns in the resulting dataframe (for test_df) to ensure that the columns are the same
 
@@ -103,9 +103,6 @@ class DataPreprocessor:
         Raises:
             ValueError: If open results or workout descriptions are missing in the input data.
 
-        TODO: Shouldn't we filter on intersection with benchmark stats
-        TODO: for consistency? I know open_results is much larger right now,
-        TODO: but it seems like a good practice to filter on the intersection.
         """
 
         if "open_results" not in data or "workout_descriptions" not in data:
