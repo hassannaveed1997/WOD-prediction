@@ -1,17 +1,31 @@
 import pandas as pd
 from IPython.display import display
 
-def show_breakdown_by_workout(y_test, y_pred, mapping):
-    workout_name = y_test.index.map(mapping)
-    df = pd.DataFrame({'workout_name':workout_name, 'y_test':y_test, 'y_pred':y_pred})
 
-    df['avg_errors'] = (y_test - y_pred).abs()
-    df = df.groupby('workout_name').agg('mean').reset_index().rename({'y_test':'avg_y_test', 'y_pred':'avg_y_pred'}, axis=1)
-    df['avg_error_percentage'] = df['avg_errors'] / df['avg_y_test']*100
+def show_breakdown_by_workout(y_pred, y_test):
+    y_pred_means = y_pred.mean(axis=0)
+    y_test_means = y_test.mean(axis=0)
+    error_df = (y_test - y_pred).abs()
 
-    # only show unscaled
-    df = df[~df['workout_name'].str.contains('scaled')]
-    df = df[~df['workout_name'].str.contains('foundation')]
+    error_means = error_df.mean(axis=0)
+
+    df = pd.DataFrame(
+        {
+            "y_test_mean": y_test_means,
+            "y_pred_mean": y_pred_means,
+            "error_mean": error_means,
+        }
+    )
+    df["error_percentage"] = df["error_mean"] / df["y_test_mean"] * 100
 
     display(df)
-    
+
+
+def unstack_series(series, meta_data):
+    """
+    Unstack a series with a multiindex
+    """
+    df = pd.DataFrame(series)
+    df["workout_name"] = df.index.map(meta_data["idx_to_workout_name"])
+    df["athlete_id"] = df.index.map(meta_data["idx_to_athlete_id"])
+    return df.pivot(columns="workout_name", values="score", index="athlete_id")

@@ -27,22 +27,23 @@ class DataPreprocessor:
         self.config = config
         self.meta_data = {}
         self.open_fe_transformer = OpenResultsFE(**self.config.get("open_results", {}))
-        self.benchmark_fe_transformer = BenchmarkStatsFE(**self.config.get("benchmark_stats", {}))
+        self.benchmark_fe_transformer = BenchmarkStatsFE(
+            **self.config.get("benchmark_stats", {})
+        )
         self.athleteinfo_fe_transformer = AthleteInfoFE(**self.config.get("athlete_info", {}))
 
     def fit(self, data):
         # initalize all feature engineering objects
-        self.open_fe_transformer.fit(data["open_results"], data.get("workout_descriptions", None))
+        self.open_fe_transformer.fit(
+            data["open_results"], data.get("workout_descriptions", None)
+        )
 
         if "benchmark_stats" in self.config:
             self.benchmark_fe_transformer.fit(data["benchmark_stats"])
 
         if "athlete_info" in self.config:
             self.athleteinfo_fe_transformer.fit(data["athlete_info"])
-        
-        # TODO: maintain a list of columns in the resulting dataframe (for test_df) to ensure that the columns are the same
 
-        
         return
 
     def transform(self, data):
@@ -76,11 +77,14 @@ class DataPreprocessor:
             fe_data.append(athlete_info)
 
         # join all feature engineered data together
-        fe_data = reduce(lambda left, right: pd.merge(left, right, on = c.athlete_id_col, how="left"), fe_data)
+        fe_data = reduce(
+            lambda left, right: pd.merge(left, right, on=c.athlete_id_col, how="left"),
+            fe_data,
+        )
         fe_data.drop(columns=[c.athlete_id_col], inplace=True)
         fe_data.index = X.index
 
-        output = {"X": fe_data, "y": y, 'meta_data': self.meta_data}
+        output = {"X": fe_data, "y": y, "meta_data": self.meta_data}
         return output
 
     def transform_open_results(self, data):

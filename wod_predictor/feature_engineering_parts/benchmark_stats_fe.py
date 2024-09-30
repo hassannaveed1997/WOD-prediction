@@ -3,6 +3,7 @@ from .helpers import fill_missing_values
 from .outlier_detection import IQRoutlierDetector
 from ..constants import Constants as c
 
+
 class BenchmarkStatsFE(BaseFEPipelineObject):
     """
     Feature engineering pipeline object for benchmark statistics.
@@ -54,7 +55,9 @@ class BenchmarkStatsFE(BaseFEPipelineObject):
 
         # remove outliers
         if self.outlier_remover:
-            benchmark_data = self.outlier_remover.transform(benchmark_data, **self.kwargs)
+            benchmark_data = self.outlier_remover.transform(
+                benchmark_data, **self.kwargs
+            )
 
         # fill missing values
         if self.missing_method is not None:
