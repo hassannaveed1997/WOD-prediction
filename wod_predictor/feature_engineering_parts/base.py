@@ -1,6 +1,6 @@
 class BaseFEPipelineObject:
     def __init__(self):
-        pass
+        self.meta_data = {}
 
     def transform(self, data):
         raise NotImplementedError
