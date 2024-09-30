@@ -1,54 +1,82 @@
 import pandas as pd
 from .base import BaseFEPipelineObject
-from .helpers import fill_missing_values
-
+from .helpers import fill_missing_values, convert_units
+from ..constants import Constants as c
 
 class AthleteInfoFE(BaseFEPipelineObject):
     """
     Feature engineering pipeline object for athlete information.
-
-    TODO: IMPLEMENT THIS CLASS FULLY
     """
 
     def __init__(
-        self, missing_method="zeros", **kwargs
+        self, missing_method="zero", **kwargs
     ):
-        # raise NotImplementedError("Athlete info FE class not yet implemented")
         self.missing_method = missing_method
         self.kwargs = kwargs
 
+    def fit(self, athlete_info_data: pd.DataFrame):
+        """
+        TODO: Add any initial setup here if needed
+        """
+        pass
+
+
     def transform(self, athlete_info_data: pd.DataFrame):
         """
-        TODO: IMPLEMENT THIS METHOD FULLY
-
-        TODO: Verify if remove_outliers and fill_missing_values will
-        TODO: work for athlete info data.
+        TODO: Verify if remove_outliers and fill_missing_values will work for athlete info data.
 
         TODO:
             Need to modify missing data filling etc. to work with
             athlete info data.
         """
+        athlete_info_melted = self.melt(athlete_info_data)
+        
+        # Tconvert data types to numeric
+        athlete_info_numeric = self.fix_units(athlete_info_melted)
 
-        # raise NotImplementedError(
-        #     "Athlete info FE tranformation not yet implemented"
-        # )
-
-        # remove unnecessary columns
-        if "name" in athlete_info_data.columns:
-            athlete_info_data.drop(columns=["name"], inplace=True)
-
-        # TODO: remove outliers
+        # create features from athlete info data
+        athlete_info_with_features = self.create_features(athlete_info_numeric)
+        
         # fill missing values
         if self.missing_method is not None:
             athlete_info_data = fill_missing_values(
                 athlete_info_data, method=self.missing_method, **self.kwargs
             )
+        return athlete_info_with_features
 
-        # Before resetting index (currently set to 'id' AKA athlete ID),
-        # create a new column to save/store the athlete ID (to be used
-        # later for reference/merging with other dataframes).
-        # Add it as the first column in the dataframe.
-        athlete_info_data.insert(0, "athlete_id", athlete_info_data.index)
+    def melt(self, athlete_info_data: pd.DataFrame):
+        """
+        Flattens the athlete info data. We have multiple 
+        """
+        years = set(athlete_info_data.columns.str.slice(0,2))
+        data_by_year = []
+        for year in years:
+            year_data = athlete_info_data.filter(like=year).copy()
+            year_data.columns = year_data.columns.str.slice(3)
+            year_data["year"] = year
+            data_by_year.append(year_data)
+        melted_athlete_info = pd.concat(data_by_year)
+        
+        athlete_ids = melted_athlete_info.index
+        melted_athlete_info[c.athlete_id_col] = athlete_ids
+        melted_athlete_info.index = athlete_ids.astype(str)+ "_"+ melted_athlete_info["year"].astype(str)
 
-        # reset index (better for merging downstream)
-        athlete_info_data = athlete_info_data.reset_index()
+        return melted_athlete_info
+    
+    def create_features(self, athlete_info_data: pd.DataFrame):
+        """
+        Create new features from athlete info data.
+        TODO: engineer any features here instead of just keeping most recent data.
+        """
+        athlete_info_data.drop_duplicates(c.athlete_id_col, keep="last", inplace=True)
+        return athlete_info_data.drop(columns=["name", "age", "year"])
+    
+    def fix_units(self, athlete_info_data: pd.DataFrame):
+        """
+        Convert units of athlete info data.
+        """
+        athlete_info_data["height"] = convert_units(athlete_info_data[["height"]], type = "height")
+        athlete_info_data["weight"] = convert_units(athlete_info_data[["weight"]], type = "weight")
+        
+        return athlete_info_data
+
