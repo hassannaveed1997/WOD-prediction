@@ -83,6 +83,7 @@ def convert_units(df, type, columns=None):
         The modified dataframe with the converted columns
 
     """
+    df  = df.copy()
     # if no columns are provided, use all columns except 'name'
     if not columns:
         columns = list(df.columns)
