@@ -4,7 +4,7 @@ from .constants import Constants as c
 import pandas as pd
 
 from wod_predictor.feature_engineering_parts import (
-    AthleteInfoFE,  # TODO: Implement this class
+    AthleteInfoFE,
     BenchmarkStatsFE,
     OpenResultsFE,
 )
@@ -53,7 +53,8 @@ class DataPreprocessor:
         This method transforms input data by calling
         corresponding methods and concatenating the results.
 
-        Also one hot encodes categorical variables.`
+        Also one hot encodes categorical variables.
+        
         Parameters:
             data (dict): Input data dictionary containing open results
             and benchmark stats.

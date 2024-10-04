@@ -79,8 +79,6 @@ class DataLoader:
         Returns:
             None
 
-        TODO: Sort the columns in reverse chronological order by year:
-        TODO: (Maybe this should go in the feature engineering module)
             .. code-block:: python
                 # Appended to the end of the method before return
                 sorted_cols = sorted(
@@ -172,8 +170,6 @@ class DataLoader:
 
     def load(self):
         """
-        Loads the specified data objects into a dictionary.
-
         Load the data objects specified in the objects attribute to a
         dictionary with keys:
             - open_results (pandas.DataFrame)
@@ -183,14 +179,12 @@ class DataLoader:
 
         Returns:
             dict: A dictionary containing the loaded data objects.
-
         """
         data = {}
         if "open_results" in self.objects:
             open_results = self.load_open_results()
             data["open_results"] = open_results
 
-        # TODO: add for other 3 input sources
         if "athlete_info" in self.objects:
             athlete_info = self.load_athlete_info()
             data["athlete_info"] = athlete_info
