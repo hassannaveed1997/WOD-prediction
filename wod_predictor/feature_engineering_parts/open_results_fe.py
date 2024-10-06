@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import numpy as np
 from .base import BaseFEPipelineObject
-from .helpers import convert_to_floats, seperate_scaled_workouts
+from .helpers import convert_to_floats, seperate_scaled_workouts, remove_suffixes
 from ..constants import Constants as c
 from .normalization import QuantileScaler, StandardScalerByWod
 
@@ -100,6 +100,8 @@ class OpenResultsFE(BaseFEPipelineObject):
         """
         # get a list of all possible columns
         temp_df = seperate_scaled_workouts(open_data)
+        temp_df = remove_suffixes(temp_df)
+
         if self.create_description_embeddings:
             raise NotImplementedError
         else:
@@ -137,6 +139,7 @@ class OpenResultsFE(BaseFEPipelineObject):
         open_data = seperate_scaled_workouts(open_data)
 
         # convert to floats (instead of reps, lbs time or mixed data types)
+        open_data = remove_suffixes(open_data)
         open_data = convert_to_floats(
             open_data, workout_descriptions, scale_up=self.scale_up
         )

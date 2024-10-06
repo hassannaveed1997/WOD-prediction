@@ -120,6 +120,28 @@ def convert_units(df, type, columns=None):
     return df
 
 
+def remove_suffixes(df):
+    """
+    Removes suffixes from the column valus of the dataframe
+
+    Parameters:
+    ----------
+    df: pd.DataFrame
+        The dataframe with columns to be modified
+
+    Returns:
+    -------
+    df: pd.DataFrame
+        The modified dataframe with the suffixes removed
+    """
+    SUFFIXES_TO_REMOVE = ["lbs", "lb", "reps"]
+
+    for col in df.columns:
+        if df[col].dtype == "object":
+            for suffix in SUFFIXES_TO_REMOVE:
+                df[col] = df[col].str.replace(suffix, "")
+    return df
+
 def seperate_scaled_workouts(df, columns=None):
     """
     Seperates the scaled and foundation workouts into different columns, to be treated as different workouts
@@ -146,10 +168,11 @@ def seperate_scaled_workouts(df, columns=None):
         if df[col].dtype != "object":  # if the column is not a string,
             continue
 
-        df[col] = df[col].str.replace("lbs", "")  # in case there are lbs in the column
-        df[col] = (
-            df[col].str.replace("reps", "").str.strip()
-        )  # if there were reps in column
+        # df[col] = df[col].str.replace("lbs", "")  # in case there are lbs in the column
+
+        # df[col] = (
+        #     df[col].str.replace("reps", "").str.strip()
+        # )  # if there were reps in column
 
         for key, value in mapping.items():
             rows_that_contain_key = df[col].str.contains(key)

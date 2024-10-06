@@ -25,7 +25,7 @@
     },
     "17.5": {
         "goal": "For Time",
-        "time_cap": null,
+        "time_cap": 40,
         "total_reps": 440,
         "description": "10 rounds For Time of: 9 thrusters (95 lb), 35 double-unders"
     },
@@ -41,8 +41,8 @@
         "total_reps": 110,
         "description": "1-2-3-4-5-6-7-8-9-10 reps, Dumbbell squats, Bar-facing burpees, Men use 50-lb. dumbbells"
     },
-    "18.2a": {
-        "goal": "Load",
+    "18.2A": {
+        "goal": "load",
         "time_cap": 12,
         "total_reps": 2,
         "description": "Dumbbell squat, Bar-facing burpees, 1-rep-max clean, Men use 50-lb. dumbbells"
