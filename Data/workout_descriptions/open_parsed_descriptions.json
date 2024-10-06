@@ -191,11 +191,22 @@
         "total_reps": 292,
         "description": "5 wall walks, 50 double-unders, 15 snatches (weight 1), 5 wall walks, 50 double-unders, 12 snatches (weight 2), *If completed before the 6-minute time cap, add 3 minutes to the time cap and complete: 20 strict handstand push-ups, 50 double-unders, 9 snatches (weight 3), *If completed before the 9-minute time cap, add 3 minutes to the time cap and complete: 20 strict handstand push-ups, 50 double-unders, 6 snatches (weight 4), \u2640 65 lb, 95 lb, 125 lb, 155 lb, \u2642 95 lb, 135 lb, 185 lb, 225 lb"
     },
-    
     "24.1": {
         "goal": "For Time",
         "time_cap": 15,
         "total_reps": 180,
         "description": "21 dumbbell snatches, arm 1, 21 lateral burpees over dumbbell, 21 dumbbell snatches, arm 2, 21 lateral burpees over dumbbell, 15 dumbbell snatches, arm 1, 15 lateral burpees over dumbbell, 15 dumbbell snatches, arm 2, 15 lateral burpees over dumbbell, 9 dumbbell snatches, arm 1, 9 lateral burpees over dumbbell, 9 dumbbell snatches, arm 2, 9 lateral burpees over dumbbell"
+    },
+    "24.2": {
+        "goal": "AMRAP",
+        "time_cap": 20,
+        "total_reps": null,
+        "description": "300-meter row, 10 deadlifts, 50 double-unders, \\u2640 125 lb (56 kg), \\u2642 185 lb (83 kg)"
+    },
+    "24.3": {
+        "goal": "for time",
+        "time_cap": 15,
+        "total_reps": 170,
+        "description": "5 rounds of: 10 thrusters (weight 1), 10 chest-to-bar pull-ups. Rest 1 minute. 5 rounds of: 7 thrusters (weight 2), 7 bar muscle-ups. Weight 1: 95 / 65, Weight 2: 135 / 95"
     }
 }
