@@ -1,7 +1,9 @@
 import pandas as pd
 import numpy as np
 import re
+
 EXCLUDED = ["workout_descriptions"]
+
 
 class DataSpitter:
     def __init__(self, sample=None, test_ratio=0.2, test_filter=None) -> None:
@@ -21,7 +23,7 @@ class DataSpitter:
             idx = np.random.choice(idx, self.sample, replace=False)
 
         test_idx = np.random.choice(idx, int(len(idx) * self.test_ratio), replace=False)
-        train_idx = np.setdiff1d(idx, test_idx) 
+        train_idx = np.setdiff1d(idx, test_idx)
 
         train_data = self.split_on_idx(data, train_idx)
         test_data = self.split_on_idx(data, test_idx)
@@ -44,5 +46,5 @@ class DataSpitter:
                 splitted_data[key] = data[key]
             else:
                 splitted_data[key] = data[key].loc[index]
-            
+
         return splitted_data
