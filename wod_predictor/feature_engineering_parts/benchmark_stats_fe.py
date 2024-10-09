@@ -2,7 +2,7 @@ from .base import BaseFEPipelineObject
 from .helpers import fill_missing_values
 from .outlier_detection import IQRoutlierDetector
 from ..constants import Constants as c
-
+from .misc import DropFeatures
 
 class BenchmarkStatsFE(BaseFEPipelineObject):
     """
@@ -19,14 +19,20 @@ class BenchmarkStatsFE(BaseFEPipelineObject):
     """
 
     def __init__(
-        self, remove_outliers: bool = True, missing_method="knn", **kwargs
+        self, remove_outliers: bool = True, missing_method="knn", drop_missing_threshold = None, **kwargs
     ):
+        self.missing_method = missing_method
+        self.kwargs = kwargs
+        
         if remove_outliers:
             self.outlier_remover = IQRoutlierDetector()
         else:
             self.outlier_remover = None
-        self.missing_method = missing_method
-        self.kwargs = kwargs
+
+        if drop_missing_threshold:
+            self.drop_features = DropFeatures(drop_missing_threshold)
+        else:
+            self.drop_features = None
 
     def fit(self, benchmark_data):
         """
@@ -34,6 +40,9 @@ class BenchmarkStatsFE(BaseFEPipelineObject):
         """
         if self.outlier_remover:
             self.outlier_remover.fit(benchmark_data)
+        if self.drop_features:
+            self.drop_features.fit(benchmark_data)
+
         return
 
     def transform(self, benchmark_data):
@@ -58,6 +67,10 @@ class BenchmarkStatsFE(BaseFEPipelineObject):
             benchmark_data = self.outlier_remover.transform(
                 benchmark_data, **self.kwargs
             )
+        
+        # drop features with more than threshold percentage of missing values
+        if self.drop_features:
+            benchmark_data = self.drop_features.transform(benchmark_data)
 
         # fill missing values
         if self.missing_method is not None:
