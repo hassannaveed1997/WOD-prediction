@@ -43,8 +43,8 @@ class AthleteInfoFE(BaseFEPipelineObject):
 
         # fill missing values
         if self.missing_method is not None:
-            athlete_info_data = fill_missing_values(
-                athlete_info_data, method=self.missing_method, **self.kwargs
+            athlete_info_with_features = fill_missing_values(
+                athlete_info_with_features, method=self.missing_method, **self.kwargs
             )
         return athlete_info_with_features
 
