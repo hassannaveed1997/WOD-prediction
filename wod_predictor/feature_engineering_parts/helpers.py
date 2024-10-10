@@ -212,7 +212,7 @@ def convert_time_cap_workout_to_time(
     x_orig = x
     x = str(x).strip()  # convert to string if not already
     try:
-        if x in [np.nan, "nan", pd.NaT]:  # if missing, return nat timedelta
+        if x in [np.nan, "nan", pd.NaT, "--"]:  # if missing, return nat timedelta
             return pd.NaT
 
         elif (
