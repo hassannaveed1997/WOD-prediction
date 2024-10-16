@@ -109,11 +109,14 @@ class DataLoader:
                 df = pd.read_csv(os.path.join(self.root_path, file))
 
                 if gender == 'Mens':
-                    df['gender'] = 0
+                    df['gender_male'] = 1
+                    df['gender_female'] = 0
                 elif gender == 'Womens':
-                    df['gender'] = 1
+                    df['gender_male'] = 0
+                    df['gender_female'] = 1
                 else:
-                    df['gender'] = None
+                    df['gender_male'] = 0
+                    df['gender_female'] = 0
 
                 df.set_index("id", inplace=True)
                 # Drop the 'Unnamed: 0' column-which is just an index
