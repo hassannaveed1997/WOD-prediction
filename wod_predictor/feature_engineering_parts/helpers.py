@@ -266,9 +266,45 @@ def convert_time_cap_workout_to_time(
             f"Could not convert {x_orig} to time, returning as is. Error: {e}"
         )
 
+def convert_rpm(x: pd.Series, total_reps, timecap):
+    """
+    Converts a mixed column into floats
+    """
+    pd.set_option('future.no_silent_downcasting', True) # to silence a warning
+    rpm = pd.Series(index=x.index, dtype=float)
+
+    missing_index = x.isnull()
+    is_timed = x.str.contains(":").fillna(False).astype(bool)
+    timed_indices = x.loc[is_timed & ~missing_index].index
+    reps_indices = x.loc[~is_timed & ~missing_index].index
+    max_reps = 0
+    if len(reps_indices) > 0:
+        numeric_results = pd.to_numeric(x.loc[reps_indices], errors='coerce')
+        max_reps = max(numeric_results)
+        rpm_from_reps = numeric_results / timecap
+        rpm.loc[reps_indices] = rpm_from_reps.astype(float)
+
+    if len(timed_indices) > 0:
+        if timecap is None:
+            raise ValueError("Timecap must be provided for workouts that are for time")
+        if max_reps> total_reps:
+            raise Warning(f"Timecap must be greater than the maximum reps in the dataset, please sanity check the descriptions and data. Workout {x.name} has observed max reps: {max_reps}, but given total reps: {total_reps}")
+        # apply the time conversion function
+        times = x.loc[timed_indices].apply(
+            lambda x: convert_time_cap_workout_to_time(
+                x, total_reps, timecap
+            )
+        )
+        times_in_minutes = times.dt.total_seconds() / 60
+        rpm_from_time= total_reps / times_in_minutes
+
+        rpm.loc[timed_indices] = rpm_from_time.astype(float)
+
+    return rpm
+
 
 def convert_to_floats(
-    df: pd.DataFrame, descriptions: dict, threshold=0.5, scale_up=False
+    df: pd.DataFrame, descriptions: dict, threshold=0.5, scale_up=False, method = 'rpm'
 ):
     """
     This function will take a workout from the open, such as 17.1, 17.3, etc. and convert it to a float. It is intended to be a standard way to convert workouts to floats.
@@ -300,9 +336,13 @@ def convert_to_floats(
                 f"Workout {workout_name} not found in descriptions, skipping preprocessing. Please inspect manually"
             )
             continue
+        
+        # if the workout is for RPM, we should use that
+        if method == 'rpm' and descriptions[workout_name_base]["goal"].lower() != "load":
+            df_modified[workout_name] = convert_rpm(df_modified[workout_name], descriptions[workout_name_base]['total_reps'], descriptions[workout_name_base]['time_cap'])
 
         # if workout is for REPS, we should be fine
-        if descriptions[workout_name_base]["goal"].lower() in ["reps", "amrap"]:
+        elif descriptions[workout_name_base]["goal"].lower() in ["reps", "amrap"]:
             df_modified[workout_name] = pd.to_numeric(
                 df_modified[workout_name], errors="ignore"
             )
