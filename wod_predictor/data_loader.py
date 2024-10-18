@@ -110,13 +110,8 @@ class DataLoader:
 
                 if gender == 'Mens':
                     df['gender_male'] = 1
-                    df['gender_female'] = 0
-                elif gender == 'Womens':
-                    df['gender_male'] = 0
-                    df['gender_female'] = 1
                 else:
                     df['gender_male'] = 0
-                    df['gender_female'] = 0
 
                 df.set_index("id", inplace=True)
                 # Drop the 'Unnamed: 0' column-which is just an index
