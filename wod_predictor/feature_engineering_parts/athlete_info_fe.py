@@ -43,8 +43,8 @@ class AthleteInfoFE(BaseFEPipelineObject):
 
         # fill missing values
         if self.missing_method is not None:
-            athlete_info_data = fill_missing_values(
-                athlete_info_data, method=self.missing_method, **self.kwargs
+            athlete_info_with_features = fill_missing_values(
+                athlete_info_with_features, method=self.missing_method, **self.kwargs
             )
         return athlete_info_with_features
 
@@ -66,7 +66,8 @@ class AthleteInfoFE(BaseFEPipelineObject):
         melted_athlete_info.index = (
             athlete_ids.astype(str) + "_" + melted_athlete_info["year"].astype(str)
         )
-
+         # if the name is missing, they didn't participate in the open that year
+        melted_athlete_info.dropna(subset=["name"], inplace=True)
         return melted_athlete_info
 
     def create_features(self, athlete_info_data: pd.DataFrame):

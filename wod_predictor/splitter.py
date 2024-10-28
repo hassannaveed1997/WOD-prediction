@@ -5,7 +5,7 @@ import re
 EXCLUDED = ["workout_descriptions"]
 
 
-class DataSpitter:
+class DataSplitter:
     def __init__(self, sample=None, test_ratio=0.2, test_filter=None) -> None:
         self.sample = sample
         self.test_ratio = test_ratio
