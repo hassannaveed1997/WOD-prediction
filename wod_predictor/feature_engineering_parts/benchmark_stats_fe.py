@@ -1,8 +1,12 @@
+import warnings
+from typing import Literal, Optional
+
 from .base import BaseFEPipelineObject
 from .helpers import fill_missing_values
 from .outlier_detection import IQRoutlierDetector
 from ..constants import Constants as c
 from .misc import DropFeatures
+from .normalization import QuantileScaler, StandardScalerByWod
 
 class BenchmarkStatsFE(BaseFEPipelineObject):
     """
@@ -19,7 +23,12 @@ class BenchmarkStatsFE(BaseFEPipelineObject):
     """
 
     def __init__(
-        self, remove_outliers: bool = True, missing_method="knn", drop_missing_threshold = None, **kwargs
+        self,
+        remove_outliers: bool = True,
+        missing_method: str = "knn",
+        drop_missing_threshold: float = None,
+        scale_method: Optional[Literal["standard", "quantile"]] = None,
+        **kwargs
     ):
         self.missing_method = missing_method
         self.kwargs = kwargs
@@ -33,6 +42,14 @@ class BenchmarkStatsFE(BaseFEPipelineObject):
             self.drop_features = DropFeatures(drop_missing_threshold)
         else:
             self.drop_features = None
+        
+        if scale_method == "standard":
+            self.scaler = StandardScalerByWod()
+        elif scale_method == "quantile":
+            self.scaler = QuantileScaler()
+        else:
+            warnings.warn(f"{scale_method} is currently not implemented. No scaling is performed for benchmark_stats")
+            self.scaler = None
 
     def fit(self, benchmark_data):
         """
@@ -42,7 +59,8 @@ class BenchmarkStatsFE(BaseFEPipelineObject):
             self.outlier_remover.fit(benchmark_data)
         if self.drop_features:
             self.drop_features.fit(benchmark_data)
-
+        if self.scaler:
+            self.scaler.fit(benchmark_data.drop(columns=['name']))
         return
 
     def transform(self, benchmark_data):
@@ -77,6 +95,11 @@ class BenchmarkStatsFE(BaseFEPipelineObject):
             benchmark_data = fill_missing_values(
                 benchmark_data, method=self.missing_method, **self.kwargs
             )
+            
+        # scale the data
+        if self.scaler:
+            self.scaler.fit(benchmark_data)
+            benchmark_data = self.scaler.transform(benchmark_data)
 
         # keep athlete_id as index
         benchmark_data[c.athlete_id_col] = benchmark_data.index

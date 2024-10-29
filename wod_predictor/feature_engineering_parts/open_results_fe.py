@@ -4,7 +4,7 @@ import numpy as np
 from .base import BaseFEPipelineObject
 from .helpers import convert_to_floats, seperate_scaled_workouts, remove_suffixes
 from ..constants import Constants as c
-from .normalization import QuantileScaler, StandardScalerByWod
+from .normalization import QuantileScaler, StandardScalerByWod, GenericSklearnScaler
 
 
 class OpenResultsFE(BaseFEPipelineObject):
@@ -40,8 +40,8 @@ class OpenResultsFE(BaseFEPipelineObject):
         self.columns = []
         self.create_description_embeddings = create_description_embeddings
         self.scale_up = scale_up
-        self.scaler = self.initialize_scaler(scale_method)
         self.kwargs = kwargs
+        self.scaler = self.initialize_scaler(scale_method)
 
         super().__init__()
 
@@ -202,6 +202,9 @@ class OpenResultsFE(BaseFEPipelineObject):
             scaler = QuantileScaler()
         elif scale_method == "standard":
             scaler = StandardScalerByWod()
+        elif scale_method == "general sklearn":
+            assert 'scaler_name' in self.kwargs, "scaler_name must be provided"
+            scaler = GenericSklearnScaler(self.kwargs["scaler_name"])
         else:
             raise ValueError(
                 "Invalid scaling method. Must be either percentile or standard."
