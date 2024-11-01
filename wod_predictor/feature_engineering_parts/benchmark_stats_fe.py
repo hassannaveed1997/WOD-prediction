@@ -61,6 +61,9 @@ class BenchmarkStatsFE(BaseFEPipelineObject):
         Initialize any transformers for later use in transform
         """
         df_copy = benchmark_data.copy()
+
+        # TODO:
+        # These redundant fits need to be addressed in a future PR.
         if self.outlier_remover:
             self.outlier_remover.fit(benchmark_data)
             df_copy = self.outlier_remover.transform(df_copy)
@@ -111,11 +114,6 @@ class BenchmarkStatsFE(BaseFEPipelineObject):
 
         # scale the data
         if self.scaler:
-            # TODO: we refit the scaler here, which is not ideal.
-            # We should fit the scaler in the fit method,
-            # but due to change of distribution after filling missing values,
-            # and removing outliers, we must refit the scaler here.
-            # This should be resolved in a fuure PR.
             benchmark_data = self.scaler.transform(benchmark_data)
 
         # keep athlete_id as index
