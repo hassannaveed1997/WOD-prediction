@@ -113,30 +113,46 @@ class TestGenericSklearnScaler(unittest.TestCase):
                 rtol=1e-10
             )
 
-    def test_edge_cases(self):
-        scaler = GenericSklearnScaler('StandardScaler')
-        
-        # empty DataFrame
+    def test_empty_df(self):
+        scaler = GenericSklearnScaler('StandardScaler')  
         empty_df = pd.DataFrame(columns=self.numeric_data.columns)
         with self.assertRaises(Exception):
             scaler.fit(empty_df)
-                
-        # single column
+
+    def test_single_column(self):
+        scaler = GenericSklearnScaler('StandardScaler')
         single_col = self.numeric_data[['Back Squat']]
         scaler.fit(single_col)
         transformed = scaler.transform(single_col)
         self.assertEqual(transformed.shape[1], 1)
 
-        # single row
+    def test_single_row(self):
+        scaler = GenericSklearnScaler('StandardScaler')
         single_row = self.numeric_data.iloc[[0]]
         scaler.fit(single_row)
         transformed = scaler.transform(single_row)
         self.assertEqual(len(transformed), 1)
 
+    def test_non_numeric_columns(self):
+        data = pd.DataFrame({
+            'A': [1, 2, 3],
+            'B': ['a', 'b', 'c'],
+            'C': [4.0, 5.0, 6.0]
+        })
+        scaler = GenericSklearnScaler('StandardScaler')
+        scaler.fit(data)
+        transformed = scaler.transform(data)
+        self.assertEqual(set(transformed.columns), {'A', 'B', 'C'})
+
+        # Transformed cols have mu=0, std=0
+        for col in ['A', 'C']:
+            mean = transformed[col].mean()
+            self.assertAlmostEqual(mean, 0, places=7)
+            std = transformed[col].std(ddof=0)
+            self.assertAlmostEqual( std, 1, places=7)
+
+        # Non-numeric cols are unchanged
+        pd.testing.assert_series_equal( transformed['B'], data['B'], check_dtype=True, check_exact=True)
 
 if __name__ == '__main__':
     unittest.main()
-    # suite = unittest.TestSuite()
-    # suite.addTest(TestGenericSklearnScaler('test_edge_cases'))    
-    # runner = unittest.TextTestRunner()
-    # runner.run(suite)

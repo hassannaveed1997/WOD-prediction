@@ -63,7 +63,7 @@ class BenchmarkStatsFE(BaseFEPipelineObject):
         df_copy = benchmark_data.copy()
 
         # TODO:
-        # These redundant fits need to be addressed in a future PR.
+        # These redundant fits (calling outlier removal and feature drop transform here and again in transform) need to be addressed in a future PR.
         if self.outlier_remover:
             self.outlier_remover.fit(benchmark_data)
             df_copy = self.outlier_remover.transform(df_copy)

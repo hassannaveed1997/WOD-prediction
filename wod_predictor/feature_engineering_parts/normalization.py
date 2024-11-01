@@ -1,6 +1,6 @@
 import importlib
 import inspect
-from typing import Union
+from typing import Union, List
 from abc import ABC, abstractmethod
 
 import pandas as pd
@@ -116,6 +116,8 @@ class GenericSklearnScaler(BaseScaler):
         self.reverse_mapping = {}
         self.is_series = False
         self.series_name = None
+        self.numeric_columns = None
+        self.non_numeric_columns = None
 
     def fit(
         self,
@@ -126,8 +128,14 @@ class GenericSklearnScaler(BaseScaler):
         Supports both DataFrame and Series inputs.
         """
         df = self._series2df(data)
-        self.scaler.fit(df)
-        self._store_params(df)
+        self.numeric_columns = self._get_numeric_columns(df)
+        self.non_numeric_columns = df.columns.difference(self.numeric_columns).tolist()
+        
+        if not self.numeric_columns:
+            raise ValueError("No numeric columns found in the input data")
+        
+        self.scaler.fit(df[self.numeric_columns])
+        self._store_params(df[self.numeric_columns])
         return self
 
     def transform(
@@ -140,17 +148,27 @@ class GenericSklearnScaler(BaseScaler):
         """
         check_is_fitted(self.scaler)
         df = self._series2df(data)
-        cols = df.columns
-
-        # pad columns
+        original_col_order = df.columns.tolist()
+        
+        numeric_cols = [col for col in self.numeric_columns if col in df.columns]
+        non_numeric_cols = [col for col in self.non_numeric_columns if col in df.columns]
+        
+        if not numeric_cols:
+            raise ValueError("None of the fitted numeric columns found in input data")
+        
         full_cols = list(self.reverse_mapping.keys())
-        df = self.pad_columns(df, full_cols=full_cols)
-
-        # note: need to permute columns to match scaler  
-        arr_result = self.scaler.transform(df[full_cols])
+        numeric_df = self.pad_columns(df[numeric_cols], full_cols=full_cols)
+        arr_result = self.scaler.transform(numeric_df[full_cols])
         result_df = pd.DataFrame(arr_result, columns=full_cols, index=df.index)
-
-        return self._input2orig_fmt(result_df.loc[:, full_cols])
+        
+        # Concat with non-numeric columns
+        if non_numeric_cols:
+            result_df = pd.concat([
+                result_df,
+                df[non_numeric_cols]
+            ], axis=1)
+        
+        return self._input2orig_fmt(result_df[full_cols + non_numeric_cols])
     
     def fit_transform(
         self, data: Union[pd.DataFrame, pd.Series]
@@ -167,31 +185,42 @@ class GenericSklearnScaler(BaseScaler):
     ) -> Union[pd.DataFrame, pd.Series]:
         """
         Reverse the data transformation to its original scale.
-        Supports both DataFrame and Series inputs.
+        Only reverses numeric columns, preserving non-numeric ones.
         """
         df = self._series2df(data)
-        result_df = df.copy()
+        renamed_cols = [col.replace(c.workout_col_prefix, "") for col in df.columns]
+        df.columns = renamed_cols
+        original_col_order = df.columns.tolist()
         
-        if hasattr(self.scaler, 'inverse_transform'):
-            columns_to_transform = df.columns
+        if not hasattr(self.scaler, 'inverse_transform'):
+            raise ValueError("Scaler does not support inverse transform")
             
-            if len(columns_to_transform) == 0:
-                raise ValueError("None of the fitted columns found in input data")
-            
-            transform_df = df[columns_to_transform]
-            renamed_cols = [col.replace(c.workout_col_prefix, "") for col in transform_df.columns]
-            transform_df.columns = renamed_cols
+        numeric_cols = [col for col in self.numeric_columns if col in df.columns]
+        non_numeric_cols = [col for col in self.non_numeric_columns if col in df.columns]
 
-            full_cols = list(self.reverse_mapping.keys())
-            transform_df = self.pad_columns(transform_df, full_cols=full_cols)
-            arr_result = self.scaler.inverse_transform(transform_df[full_cols])
-            result_df = pd.DataFrame(arr_result, columns=full_cols, index=df.index)
+        if not numeric_cols:
+            raise ValueError("None of the fitted numeric columns found in input data")
+        
+        # Transform numeric columns
+        transform_df = df[numeric_cols]
+        renamed_cols = [col.replace(c.workout_col_prefix, "") for col in transform_df.columns]
+        transform_df.columns = renamed_cols
+
+        full_cols = list(self.reverse_mapping.keys())
+        transform_df = self.pad_columns(transform_df, full_cols=full_cols)
+        arr_result = self.scaler.inverse_transform(transform_df[full_cols])
+        result_df = pd.DataFrame(arr_result, columns=full_cols, index=df.index)
+        
+        # Concat with non-numeric columns
+        if non_numeric_cols:
+            result_df = pd.concat([
+                result_df.loc[:, renamed_cols],
+                df[non_numeric_cols]
+            ], axis=1)
+        else:
+            result_df = result_df.loc[:, renamed_cols]
             
-            return self._input2orig_fmt(result_df.loc[:, renamed_cols])
-            
-        raise NotImplementedError(
-            f"Scaler {type(self.scaler).__name__} does not support inverse transformation"
-        )
+        return self._input2orig_fmt(result_df[original_col_order])
 
     # --------------- Private helper methods ------------------
     def _instantiate_scaler(self, scaler_name: str, **kwargs):
@@ -227,6 +256,12 @@ class GenericSklearnScaler(BaseScaler):
                 df.columns = [self.series_name]
             return df.iloc[:, 0]
         return df
+
+    def _get_numeric_columns(self, df: pd.DataFrame) -> List[str]:
+        """
+        Identify numeric columns in the DataFrame.
+        """
+        return df.select_dtypes(include=['int64', 'float64']).columns.tolist()
 
     def _store_params(self, df: pd.DataFrame):
         """
