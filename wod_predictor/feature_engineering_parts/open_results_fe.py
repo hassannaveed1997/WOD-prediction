@@ -4,7 +4,7 @@ import numpy as np
 from .base import BaseFEPipelineObject
 from .helpers import convert_to_floats, seperate_scaled_workouts, remove_suffixes
 from ..constants import Constants as c
-from .normalization import QuantileScaler, StandardScalerByWod
+from .normalization import QuantileScaler, StandardScalerByWod, GenericSklearnScaler
 
 
 class OpenResultsFE(BaseFEPipelineObject):
@@ -33,15 +33,15 @@ class OpenResultsFE(BaseFEPipelineObject):
         self,
         create_description_embeddings=False,
         scale_up=False,
-        scale_method=None,
+        scale_args=None,
         **kwargs
     
     ):
         self.columns = []
         self.create_description_embeddings = create_description_embeddings
         self.scale_up = scale_up
-        self.scaler = self.initialize_scaler(scale_method)
         self.kwargs = kwargs
+        self.scaler = self.initialize_scaler(scale_args)
 
         super().__init__()
 
@@ -195,15 +195,20 @@ class OpenResultsFE(BaseFEPipelineObject):
             workout_name_mapping = data[workout_cols].idxmax(axis=1)
         return workout_name_mapping
 
-    def initialize_scaler(self, scale_method):
-        if scale_method is None:
+    def initialize_scaler(self, scale_args):
+        if scale_args is None or "method" not in scale_args:
             return None
-        elif scale_method == "quantile":
+
+        scale_method = scale_args.pop("method")
+        if scale_method == "quantile":
             scaler = QuantileScaler()
         elif scale_method == "standard":
             scaler = StandardScalerByWod()
+        elif scale_method == "general":
+            assert "scaler_name" in scale_args, "To use general scaler, you must specify scaler_name"
+            scaler = GenericSklearnScaler(**scale_args)
         else:
             raise ValueError(
-                "Invalid scaling method. Must be either percentile or standard."
+                "Invalid scaling method. Must be either percentile, standard, or general."
             )
         return scaler

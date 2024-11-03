@@ -15,7 +15,7 @@ def fill_missing_values(df, method, **kwargs):
     # neighbors -> number of neighbors to compare to for KNN algorithm: should be (1, 20) inclusive
     # identifier_columns -> list of column headers related to the athlete's identity (index, ID, name)
     # data_columns -> list of column headers that contain athletes' data
-    SUPPORTED_METHODS = ["knn", "zero"]
+    SUPPORTED_METHODS = ["knn", "zero", "mean", "median"]
     if method not in SUPPORTED_METHODS:
         raise ValueError(
             f"Method {method} is not supported for fill_missing_values. Please use one of the following: {SUPPORTED_METHODS}"
@@ -26,6 +26,10 @@ def fill_missing_values(df, method, **kwargs):
         return df_filled
     if method == "zero":
         return df.fillna(0)
+    if method == "mean":
+        return df.fillna(df.mean())
+    if method == "median":
+        return df.fillna(df.median())
 
 
 def fill_missing_knn(df, neighbors, data_columns=[]):
