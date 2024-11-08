@@ -2,28 +2,60 @@ import pandas as pd
 import numpy as np
 import numpy as np
 from .base import BaseFEPipelineObject
-from .helpers import convert_to_floats, seperate_scaled_workouts
+from .helpers import convert_to_floats, seperate_scaled_workouts, remove_suffixes
 from ..constants import Constants as c
-from .normalization import QuantileScaler, StandardScalerByWod
+from .normalization import QuantileScaler, StandardScalerByWod, GenericSklearnScaler
 
 
 class OpenResultsFE(BaseFEPipelineObject):
+    """
+    Feature engineering pipeline object for processing open results data.
+
+    Args:
+        create_description_embeddings (bool): Flag indicating whether to create description embeddings. Default is False.
+        scale_up (bool): Flag indicating whether to scale up the data. Default is False.
+        **kwargs: Additional keyword arguments.
+
+    Attributes:
+        create_description_embeddings (bool): Flag indicating whether to create description embeddings.
+        scale_up (bool): Flag indicating whether to scale up the data.
+        kwargs (dict): Additional keyword arguments.
+
+    Methods:
+        melt_data(open_data): Melt the data into a long format.
+        description_embeddings(): Generate description embeddings.
+        transform(open_data, workout_descriptions=None): Perform various operations on the data.
+
+    """
+
     def __init__(
+        
         self,
         create_description_embeddings=False,
         scale_up=False,
-        scale_method=None,
+        scale_args=None,
         **kwargs
+    
     ):
         self.columns = []
         self.create_description_embeddings = create_description_embeddings
         self.scale_up = scale_up
-        self.scaler = self.initialize_scaler(scale_method)
         self.kwargs = kwargs
+        self.scaler = self.initialize_scaler(scale_args)
 
         super().__init__()
 
     def melt_data(self, open_data):
+        """
+        Melt the data into a long format.
+
+        Args:
+            open_data (pd.DataFrame): The input data to be melted.
+
+        Returns:
+            pd.DataFrame: The melted data.
+
+        """
         open_data_melted = open_data.melt(
             var_name="workout", value_name="score", ignore_index=False
         )
@@ -53,6 +85,13 @@ class OpenResultsFE(BaseFEPipelineObject):
         return index
 
     def description_embeddings(self):
+        """
+        Generate description embeddings.
+
+        Raises:
+            NotImplementedError: This method is not implemented.
+
+        """
         raise NotImplementedError
 
     def fit(self, open_data, workout_descriptions=None):
@@ -61,6 +100,8 @@ class OpenResultsFE(BaseFEPipelineObject):
         """
         # get a list of all possible columns
         temp_df = seperate_scaled_workouts(open_data)
+        temp_df = remove_suffixes(temp_df)
+
         if self.create_description_embeddings:
             raise NotImplementedError
         else:
@@ -77,15 +118,28 @@ class OpenResultsFE(BaseFEPipelineObject):
 
     def transform(self, open_data, workout_descriptions=None):
         """
+        Perform various operations on the data.
+
         This function is intended to perform a few operations:
         - convert workout columns into a single data type
         - melt the data into a long format (if applicable). Then each row will represent a single workout, rather than a single athlete.
         - add relevant info from workout descriptions
+
+        Args:
+            open_data (pd.DataFrame): The input data to be transformed.
+            workout_descriptions (pd.DataFrame, optional): The workout descriptions. Default is None.
+
+        Returns:
+            pd.DataFrame: The transformed data.
+
+        Notes:
+
         """
-        # seperate out scaled workouts as seperate columns
+        # separate out scaled workouts as separate columns
         open_data = seperate_scaled_workouts(open_data)
 
         # convert to floats (instead of reps, lbs time or mixed data types)
+        open_data = remove_suffixes(open_data)
         open_data = convert_to_floats(
             open_data, workout_descriptions, scale_up=self.scale_up
         )
@@ -100,7 +154,9 @@ class OpenResultsFE(BaseFEPipelineObject):
         self.create_meta_data(open_data)
 
         if self.create_description_embeddings:
-            description_embeddings = self.description_embeddings(workout_descriptions)
+            description_embeddings = self.description_embeddings(
+                workout_descriptions
+            )
             # merge the two datasets
             open_data = pd.merge(
                 open_data, description_embeddings, how="left", on="workout"
@@ -139,15 +195,20 @@ class OpenResultsFE(BaseFEPipelineObject):
             workout_name_mapping = data[workout_cols].idxmax(axis=1)
         return workout_name_mapping
 
-    def initialize_scaler(self, scale_method):
-        if scale_method is None:
+    def initialize_scaler(self, scale_args):
+        if scale_args is None or "method" not in scale_args:
             return None
-        elif scale_method == "quantile":
+
+        scale_method = scale_args.pop("method")
+        if scale_method == "quantile":
             scaler = QuantileScaler()
         elif scale_method == "standard":
             scaler = StandardScalerByWod()
+        elif scale_method == "general":
+            assert "scaler_name" in scale_args, "To use general scaler, you must specify scaler_name"
+            scaler = GenericSklearnScaler(**scale_args)
         else:
             raise ValueError(
-                "Invalid scaling method. Must be either percentile or standard."
+                "Invalid scaling method. Must be either percentile, standard, or general."
             )
         return scaler

@@ -15,7 +15,7 @@ def fill_missing_values(df, method, **kwargs):
     # neighbors -> number of neighbors to compare to for KNN algorithm: should be (1, 20) inclusive
     # identifier_columns -> list of column headers related to the athlete's identity (index, ID, name)
     # data_columns -> list of column headers that contain athletes' data
-    SUPPORTED_METHODS = ["knn", "zero"]
+    SUPPORTED_METHODS = ["knn", "zero", "mean", "median"]
     if method not in SUPPORTED_METHODS:
         raise ValueError(
             f"Method {method} is not supported for fill_missing_values. Please use one of the following: {SUPPORTED_METHODS}"
@@ -26,6 +26,10 @@ def fill_missing_values(df, method, **kwargs):
         return df_filled
     if method == "zero":
         return df.fillna(0)
+    if method == "mean":
+        return df.fillna(df.mean())
+    if method == "median":
+        return df.fillna(df.median())
 
 
 def fill_missing_knn(df, neighbors, data_columns=[]):
@@ -83,6 +87,7 @@ def convert_units(df, type, columns=None):
         The modified dataframe with the converted columns
 
     """
+    df  = df.copy()
     # if no columns are provided, use all columns except 'name'
     if not columns:
         columns = list(df.columns)
@@ -119,6 +124,28 @@ def convert_units(df, type, columns=None):
     return df
 
 
+def remove_suffixes(df):
+    """
+    Removes suffixes from the column valus of the dataframe
+
+    Parameters:
+    ----------
+    df: pd.DataFrame
+        The dataframe with columns to be modified
+
+    Returns:
+    -------
+    df: pd.DataFrame
+        The modified dataframe with the suffixes removed
+    """
+    SUFFIXES_TO_REMOVE = ["lbs", "lb", "reps"]
+
+    for col in df.columns:
+        if df[col].dtype == "object":
+            for suffix in SUFFIXES_TO_REMOVE:
+                df[col] = df[col].str.replace(suffix, "")
+    return df
+
 def seperate_scaled_workouts(df, columns=None):
     """
     Seperates the scaled and foundation workouts into different columns, to be treated as different workouts
@@ -145,10 +172,11 @@ def seperate_scaled_workouts(df, columns=None):
         if df[col].dtype != "object":  # if the column is not a string,
             continue
 
-        df[col] = df[col].str.replace("lbs", "")  # in case there are lbs in the column
-        df[col] = (
-            df[col].str.replace("reps", "").str.strip()
-        )  # if there were reps in column
+        # df[col] = df[col].str.replace("lbs", "")  # in case there are lbs in the column
+
+        # df[col] = (
+        #     df[col].str.replace("reps", "").str.strip()
+        # )  # if there were reps in column
 
         for key, value in mapping.items():
             rows_that_contain_key = df[col].str.contains(key)
