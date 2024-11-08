@@ -105,7 +105,11 @@ class NeuralNetV0(BaseModeler,nn.Module):
     def forward(self, x):
         return self.model(x)
 
-    def fit(self, X_train_torch, y_train_torch, epochs=1000, lr=0.001):
+    def fit(self, X, y, epochs=1000, lr=0.001):
+
+        X_train_torch = torch.tensor(X.values,dtype = torch.float32)
+        y_train_torch = torch.tensor(y.values,dtype = torch.float32).view(-1,1)
+
         # Define the loss function and optimizer
         loss_fn = nn.MSELoss()
         optimizer = torch.optim.Adam(params=self.parameters(), lr=lr)
@@ -126,7 +130,10 @@ class NeuralNetV0(BaseModeler,nn.Module):
             if epoch % 100 == 0:
                 print(f"Epoch: {epoch} | Training Loss: {loss.item():.4f}")
 
-    def predict(self, X_test_torch):
+    def predict(self, X_test):
+
+        X_test_torch = torch.tensor(X_test.values,dtype = torch.float32)
+
         print("Predict method called")
         self.eval()  # Set the model in evaluation mode
         with torch.inference_mode():
