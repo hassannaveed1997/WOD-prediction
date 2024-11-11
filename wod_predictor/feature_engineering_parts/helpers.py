@@ -227,7 +227,7 @@ def convert_time_cap_workout_to_reps(x, total_reps, time_cap, scale_up=False):
             if scale_up and total_reps is not None: # return total_reps * time_cap / x
                 # Convert the time strings into timedelta objects
                 time_cap = pd.to_timedelta(time_cap)
-                x = pd.to_timedelta(time_cap)
+                x = pd.to_timedelta(x)
                 # Find scaling factor using total number of seconds in each time object
                 scaling_factor = time_cap.total_seconds() / x.total_seconds()
             else: # return total_reps
