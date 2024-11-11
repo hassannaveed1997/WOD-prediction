@@ -159,7 +159,6 @@ def remove_scaled_workout_columns(df):
     
     df.drop(cols_to_drop, axis = 1, inplace = True)
     return df
-    
 
 def seperate_scaled_workouts(df, columns=None):
     """
