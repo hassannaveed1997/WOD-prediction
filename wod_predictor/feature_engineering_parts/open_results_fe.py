@@ -33,6 +33,7 @@ class OpenResultsFE(BaseFEPipelineObject):
         self,
         create_description_embeddings=False,
         scale_up=False,
+        conversion_method = None,
         scale_method=None,
         **kwargs
     
@@ -41,6 +42,7 @@ class OpenResultsFE(BaseFEPipelineObject):
         self.create_description_embeddings = create_description_embeddings
         self.scale_up = scale_up
         self.scaler = self.initialize_scaler(scale_method)
+        self.conversion_method = conversion_method
         self.kwargs = kwargs
 
         super().__init__()
@@ -110,7 +112,7 @@ class OpenResultsFE(BaseFEPipelineObject):
 
         # fit normalization methods
         temp_df = convert_to_floats(
-            temp_df, workout_descriptions, scale_up=self.scale_up
+            temp_df, workout_descriptions, scale_up=self.scale_up, method=self.conversion_method
         )
         self.scaler.fit(temp_df)
 
@@ -141,7 +143,7 @@ class OpenResultsFE(BaseFEPipelineObject):
         # convert to floats (instead of reps, lbs time or mixed data types)
         open_data = remove_suffixes(open_data)
         open_data = convert_to_floats(
-            open_data, workout_descriptions, scale_up=self.scale_up
+            open_data, workout_descriptions, scale_up=self.scale_up, method=self.conversion_method
         )
 
         # TODO: normalize data here

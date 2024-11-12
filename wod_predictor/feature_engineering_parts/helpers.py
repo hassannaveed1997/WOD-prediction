@@ -304,7 +304,7 @@ def convert_rpm(x: pd.Series, total_reps, timecap):
 
 
 def convert_to_floats(
-    df: pd.DataFrame, descriptions: dict, threshold=0.5, scale_up=False, method = 'rpm'
+    df: pd.DataFrame, descriptions: dict, threshold=0.5, scale_up=False, method = None
 ):
     """
     This function will take a workout from the open, such as 17.1, 17.3, etc. and convert it to a float. It is intended to be a standard way to convert workouts to floats.
