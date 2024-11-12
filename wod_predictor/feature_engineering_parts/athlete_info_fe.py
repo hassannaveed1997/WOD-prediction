@@ -2,6 +2,7 @@ import pandas as pd
 from .base import BaseFEPipelineObject
 from .helpers import fill_missing_values, convert_units
 from ..constants import Constants as c
+from datetime import datetime
 
 
 class AthleteInfoFE(BaseFEPipelineObject):
@@ -15,17 +16,18 @@ class AthleteInfoFE(BaseFEPipelineObject):
 
     def fit(self, athlete_info_data: pd.DataFrame):
         """
-        Add any initial setup here if needed
+        Add any initial setup here if needed.
         """
         pass
 
     def transform(self, athlete_info_data: pd.DataFrame):
         """
-        Transforms athlete info data
+        Transforms athlete info data:
         - melts data from wide to long format, with each row representing an athlete/year pair
         - converts units to metric
         - creates features from athlete info data
-        - OPTIONAL: fills missing values
+        - calculates and verifies birth year consistency across all reported years
+        - fills missing values if specified
 
         Parameters:
             athlete_info_data (pd.DataFrame): Athlete info data
@@ -33,24 +35,54 @@ class AthleteInfoFE(BaseFEPipelineObject):
         Returns:
             pd.DataFrame: Transformed athlete info data
         """
+        # Melt data into long format
         athlete_info_melted = self.melt(athlete_info_data)
 
-        # Tconvert data types to numeric
+        # Convert data types to numeric
         athlete_info_numeric = self.fix_units(athlete_info_melted)
 
-        # create features from athlete info data
+        # Calculate birth year based on each reported year and verify consistency
+        athlete_info_numeric['birth_year_calculated'] = (
+            athlete_info_numeric['year'].astype(int) - athlete_info_numeric['age']
+        )
+        
+        # Check for consistency in calculated birth year
+        birth_year_consistency = (
+            athlete_info_numeric.groupby(c.athlete_id_col)['birth_year_calculated']
+            .nunique()
+            .reset_index(name='unique_birth_years')
+        )
+        inconsistent_athletes = birth_year_consistency[
+            birth_year_consistency['unique_birth_years'] > 1
+        ][c.athlete_id_col]
+
+        # Flag or handle inconsistencies (e.g., log, remove, etc.)
+        if not inconsistent_athletes.empty:
+            # Optionally, log or handle inconsistent athletes
+            print("Inconsistent birth year calculations for athletes:", inconsistent_athletes.tolist())
+            
+            # Remove inconsistent athletes (optional)
+            athlete_info_numeric = athlete_info_numeric[
+                ~athlete_info_numeric[c.athlete_id_col].isin(inconsistent_athletes)
+            ]
+
+        # Drop temporary birth_year_calculated column and keep verified birth_year
+        athlete_info_numeric['birth_year'] = athlete_info_numeric.groupby(c.athlete_id_col)['birth_year_calculated'].transform('first')
+        athlete_info_numeric.drop(columns=['birth_year_calculated'], inplace=True)
+
+        # Create features from athlete info data
         athlete_info_with_features = self.create_features(athlete_info_numeric)
 
-        # fill missing values
+        # Fill missing values if specified
         if self.missing_method is not None:
-            athlete_info_data = fill_missing_values(
-                athlete_info_data, method=self.missing_method, **self.kwargs
+            athlete_info_with_features = fill_missing_values(
+                athlete_info_with_features, method=self.missing_method, **self.kwargs
             )
         return athlete_info_with_features
 
     def melt(self, athlete_info_data: pd.DataFrame):
         """
-        Flattens the athlete info data. We have multiple
+        Flattens the athlete info data to long format with year information.
         """
         years = set(athlete_info_data.columns.str.slice(0, 2))
         data_by_year = []
