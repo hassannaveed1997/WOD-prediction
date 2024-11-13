@@ -13,3 +13,4 @@ seaborn
 torch~=2.2, <3.0
 torchmetrics
 tqdm
+lightgbm
