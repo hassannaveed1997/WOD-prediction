@@ -1,8 +1,13 @@
+from abc import ABC, abstractmethod
+
+import pandas as pd
+import numpy as np
+
+from lightgbm import LGBMRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, mean_absolute_percentage_error
 from .models.helpers import show_breakdown_by_workout, unstack_series
-import pandas as pd
-import numpy as np
+
 import torch
 from torch import nn
 
@@ -10,7 +15,7 @@ from torch import nn
 
 
 
-class BaseModeler:
+class BaseModeler(ABC):
     def __init__(self, config: dict = {}):
         self.config = config
         self.x_train = None
@@ -20,9 +25,11 @@ class BaseModeler:
         self.y_pred = None
         self.model = None
 
+    @abstractmethod
     def fit(self, X, y):
         raise NotImplementedError
 
+    @abstractmethod
     def predict(self, X):
         raise NotImplementedError
 
