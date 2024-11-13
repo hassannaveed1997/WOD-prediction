@@ -217,7 +217,7 @@ def convert_time_cap_workout_to_reps(x, total_reps, time_cap, scale_up=False):
     x = str(x).strip()  # convert to string if not already
     try:
         if x in [np.nan, "nan", pd.NaT]:  # if missing, return nat timedelta
-            return pd.NaT
+            return np.nan
         elif (
             ":" in x
         ):  # if x is reported as a time, athlete finished workout which needs to be converted to reps
@@ -273,7 +273,7 @@ def convert_time_cap_workout_to_time(
     x = str(x).strip()  # convert to string if not already
     try:
         if x in [np.nan, "nan", pd.NaT, "--"]:  # if missing, return nat timedelta
-            return pd.NaT
+            return np.nan
 
         elif (
             ":" in x
@@ -296,7 +296,7 @@ def convert_time_cap_workout_to_time(
             else:
                 scaling_factor = 1
 
-            return time_cap * scaling_factor
+            return time_cap * scaling_factor 
     except Exception as e:
         warnings.warn(
             f"Could not convert {x_orig} to time, returning as is. Error: {e}"
@@ -356,10 +356,6 @@ def convert_to_floats(
                         scale_up=scale_up,
                     )
                 )
-                # convert the time to minutes
-                df_modified[workout_name] = (
-                    df_modified[workout_name].dt.total_seconds() / 60
-                )
             else:
                 # if there is no time cap, raise error
                 raise ValueError(
@@ -378,9 +374,9 @@ def convert_to_floats(
         # manual inspection
         try:
             pd.to_numeric(df_modified[workout_name])
-        except ValueError:
+        except Exception as e:
             warnings.warn(
-                f"Could not convert column {workout_name} to float. Please inspect manually"
+                f"{e}: Could not convert column {workout_name} to float. Please inspect manually"
             )
     # final cast of dtypes
     df_modified = df_modified.astype(float)
