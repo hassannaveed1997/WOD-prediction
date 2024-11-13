@@ -163,7 +163,7 @@ class OpenResultsFE(BaseFEPipelineObject):
             )
         else:
             # one hot encode the workouts
-            workout_dummies = pd.get_dummies(open_data["workout"])
+            workout_dummies = pd.get_dummies(open_data["workout"]).astype(float)
             # ensure that the columns are in the same order
             for col in self.columns:
                 if col not in workout_dummies.columns:

@@ -55,6 +55,9 @@ class BenchmarkStatsFE(BaseFEPipelineObject):
             else:
                 warnings.warn(f"{scale_method} is currently not implemented. No scaling is performed for benchmark_stats")
                 self.scaler = None
+        else:
+            self.scaler = None
+
 
     def fit(self, benchmark_data):
         """

@@ -169,13 +169,11 @@ class DataLoader:
         benchmark_stats = pd.read_csv(
             os.path.join(
                 self.root_path,
-                "benchmark_stats/2023_BenchMarkStats_men3_cleaned.csv",
+                "benchmark_stats/Benchmark_stats_cleaned.csv",
             )
         )
-        if "Unnamed: 0" in benchmark_stats.columns:
-            benchmark_stats.drop(columns=["Unnamed: 0"], inplace=True)
 
-        benchmark_stats.set_index("id", inplace=True)
+        benchmark_stats.set_index("athlete_id", inplace=True)
 
         return benchmark_stats
 

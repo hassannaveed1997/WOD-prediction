@@ -199,20 +199,52 @@ def convert_time_cap_workout_to_reps(x, total_reps, time_cap, scale_up=False):
     and the athlete finished in 15 minutes, we could do two things:
     1. Either return the reps as is, which would be 100 in the example, because the athlete finished the workout
     2. Scale up the number of reps to 100*20/15 = 133.33, which could approximate the number of reps the athlete would have finished in 20 minutes.
+
+    Parameters:
+    ----------
+    x: str
+        The time or reps completed by the athlete
+    total_reps: int
+        The total number of reps in the workout
+    time_cap: int
+        The time cap for the workout in minutes
+    scale_up: bool
+        Whether to scale up the reps or not if they didn't complete workout
     """
-    # TODO: Finish this function
-    raise NotImplementedError
-    # if x is reported as reps
-    if isinstance(x, int):
-        # athlete finished the workout
-        if x >= total_reps:
-            # athlete did not finish the workout -> scale_up
-            return x
-        else:
-            return total_reps * time_cap / x
-    # if x is reported as time, then athlete finished workout
-    else:
-        return total_reps
+
+    time_delta_format = "00:00:00"
+    x_orig = x
+    x = str(x).strip()  # convert to string if not already
+    try:
+        if x in [np.nan, "nan", pd.NaT]:  # if missing, return nat timedelta
+            return pd.NaT
+        elif (
+            ":" in x
+        ):  # if x is reported as a time, athlete finished workout which needs to be converted to reps
+            x = time_delta_format[: len(time_delta_format) - len(x)] + x # fixes format to "00:00:00"
+            # fixes format of time_cap
+            time_cap = str(time_cap) + ":00"
+            time_cap = (
+                time_delta_format[: len(time_delta_format) - len(time_cap)] + time_cap
+            )
+            
+            if scale_up and total_reps is not None: # return total_reps * time_cap / x
+                # Convert the time strings into timedelta objects
+                time_cap = pd.to_timedelta(time_cap)
+                x = pd.to_timedelta(x)
+                # Find scaling factor using total number of seconds in each time object
+                scaling_factor = time_cap.total_seconds() / x.total_seconds()
+            else: # return total_reps
+                scaling_factor = 1
+            
+            return total_reps * scaling_factor
+
+        else:  # athlete did not finish workout, they have a score in reps which can be returned as is
+            return int(x)
+    except Exception as e:
+        warnings.warn(
+            f"Could not convert {x_orig} to reps, returning as is. Error: {e}"
+        )
 
 
 def convert_time_cap_workout_to_time(
@@ -231,7 +263,7 @@ def convert_time_cap_workout_to_time(
     total_reps: int
         The total number of reps in the workout
     time_cap: int
-        The time cap for the workout in munutes
+        The time cap for the workout in minutes
     scale_up: bool
         Whether to scale up the time or not if they didn't complete workout
     """
@@ -240,7 +272,7 @@ def convert_time_cap_workout_to_time(
     x_orig = x
     x = str(x).strip()  # convert to string if not already
     try:
-        if x in [np.nan, "nan", pd.NaT]:  # if missing, return nat timedelta
+        if x in [np.nan, "nan", pd.NaT, "--"]:  # if missing, return nat timedelta
             return pd.NaT
 
         elif (
@@ -252,7 +284,7 @@ def convert_time_cap_workout_to_time(
             x = pd.to_timedelta(x)
             return x
 
-        else:  # athlete did not finish workout, they have a score in reps which needs to be converted to reps
+        else:  # athlete did not finish workout, they have a score in reps which needs to be converted to time
             time_cap = str(time_cap) + ":00"
             time_cap = (
                 time_delta_format[: len(time_delta_format) - len(time_cap)] + time_cap
@@ -317,7 +349,7 @@ def convert_to_floats(
                 # if the workout has a time cap, some athletes might not have finished it.
                 # The ones that finished would have a time, the rest would have reps completed until the timecap.
                 df_modified[workout_name] = df_modified[workout_name].apply(
-                    lambda x: convert_time_cap_workout_to_time(
+                    lambda x: convert_time_cap_workout_to_reps(
                         x,
                         descriptions[workout_name_base]["total_reps"],
                         descriptions[workout_name_base]["time_cap"],
