@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import warnings
 from sklearn.impute import KNNImputer
+from ..constants import Constants as c
 
 LB_MULTIPLIER = 2.20462
 CM_MULTIPLIER = 0.393701
@@ -146,6 +147,19 @@ def remove_suffixes(df):
                 df[col] = df[col].str.replace(suffix, "")
     return df
 
+def remove_scaled_workout_columns(df):
+    workout_cols = [
+            col for col in df.columns if "." in col
+        ]
+    
+    cols_to_drop = []
+    for col in workout_cols:
+        if col.endswith(c.foundation_tag) or col.endswith(c.scaled_tag):
+            cols_to_drop.append(col)
+    
+    df.drop(cols_to_drop, axis = 1, inplace = True)
+    return df
+
 def seperate_scaled_workouts(df, columns=None):
     """
     Seperates the scaled and foundation workouts into different columns, to be treated as different workouts
@@ -167,23 +181,18 @@ def seperate_scaled_workouts(df, columns=None):
         columns = [
             col for col in df.columns if "." in col
         ]  # generally open workouts have a "." in the name, e.g 17.4
-    mapping = {" - f": "foundation", " - s": "scaled"}
+
+    mapping = {" - f": c.foundation_tag, " - s": c.scaled_tag}
     for col in columns:
         if df[col].dtype != "object":  # if the column is not a string,
             continue
 
-        # df[col] = df[col].str.replace("lbs", "")  # in case there are lbs in the column
-
-        # df[col] = (
-        #     df[col].str.replace("reps", "").str.strip()
-        # )  # if there were reps in column
-
-        for key, value in mapping.items():
+        for key, tag in mapping.items():
             rows_that_contain_key = df[col].str.contains(key)
 
             # keep row as it is for those containing the key, but NA for others
             if rows_that_contain_key.any():
-                new_col = f"{col}_{value}"
+                new_col = f"{col}{tag}"
                 df[new_col] = df[col].where(rows_that_contain_key)
                 df[new_col] = df[new_col].str.replace(key, "")
 
@@ -326,8 +335,8 @@ def convert_to_floats(
     df_modified.columns = [col.replace("_score", "") for col in df_modified.columns]
     for workout_name in df_modified.columns:
         # remove any suffixes from the workout name for easy lookup
-        workout_name_base = workout_name.replace("_scaled", "").replace(
-            "_foundation", ""
+        workout_name_base = workout_name.replace(c.scaled_tag, "").replace(
+            c.foundation_tag, ""
         )
 
         # if we don't have the workout name in descriptions, we skip it
