@@ -1,0 +1,47 @@
+preprocessing:
+  open_results: 
+    scale_up: True
+    scale_args: 
+      method: general
+      scaler_name: StandardScaler    
+  benchmark_stats: 
+    remove_outliers: True
+    missing_method: zero
+    drop_missing_threshold: 0.9
+    scale_args: 
+      method: general
+      scaler_name: StandardScaler
+  athlete_info: {}
+
+model: 
+  name: RandomForestModel
+  init_args:
+    n_estimators: 10
+  fit_args: {}
+
+tune_params:
+  n_estimators: 
+    param_type: int
+    low: 10
+    high: 500
+    path: ["model", "init_args", "n_estimators"]
+  max_depth:
+    param_type: int
+    low: 3
+    high: 30
+    path: ["model", "init_args", "max_depth"]
+  min_samples_split: 
+    param_type: int
+    low: 2
+    high: 20
+    path: ["model", "init_args", "min_samples_split"]
+  min_samples_leaf:
+    param_type: int
+    low: 1
+    high: 10
+    path: ["model", "init_args", "min_samples_leaf"]
+
+study:
+  tuner_args:
+    n_trials: 20
+

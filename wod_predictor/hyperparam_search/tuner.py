@@ -52,6 +52,7 @@ class HyperparamTuner:
         self.study = None
         self.best_params = None
         self.best_score = None
+        self.final_config = None
         
         logging.basicConfig(level=logging.INFO)
         self.logger = logging.getLogger(__name__)
@@ -79,8 +80,9 @@ class HyperparamTuner:
                 final_config = self._update_nested_dict(final_config, param_range.path, value)
             else:
                 final_config[param_name] = value
-        
+        final_config.pop('data')
         self.logger.info(f"Best score: {self.best_score}")
+        self.final_config = final_config
         return final_config
     
     # ---------- Private methods ----------
@@ -127,7 +129,7 @@ class HyperparamTuner:
     def save_best_state(self, save_folder: str):
         path = os.path.join(save_folder, "best_state.pkl")
         os.makedirs(save_folder, exist_ok=True)
-        if self.best_params is None:
+        if self.final_config is None:
             raise NotFittedError("No study has been created yet.")
         with open(path, 'wb') as handle:
-            pickle.dump(self.best_params, handle, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump(self.final_config, handle, protocol=pickle.HIGHEST_PROTOCOL)
