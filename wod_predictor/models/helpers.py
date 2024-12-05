@@ -1,6 +1,6 @@
 import pandas as pd
 from IPython.display import display
-
+from sklearn.metrics import mean_absolute_error
 
 def show_breakdown_by_workout(y_pred, y_test):
     y_pred_means = y_pred.mean(axis=0)
@@ -20,6 +20,23 @@ def show_breakdown_by_workout(y_pred, y_test):
 
     display(df)
 
+def show_comparison(target, benchmark, predictions):
+    metrics = {
+        'MAE':mean_absolute_error
+    }
+    results = []
+    for name, metric in metrics.items():
+        metric_results = pd.DataFrame({
+            'benchmark': metric(y_true = target, y_pred = benchmark),
+            'model': metric(y_true = target, y_pred = predictions),
+        }, index=[name])
+
+        results.append(metric_results)
+    results_df =  pd.concat(results, axis = 0)
+
+    results_df["improvement"] = (results_df['benchmark']-results_df['model'])/results_df['benchmark']
+    print("\nModel Comparison:")
+    display(results_df)
 
 def unstack_series(series, meta_data):
     """

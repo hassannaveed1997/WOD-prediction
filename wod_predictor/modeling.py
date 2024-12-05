@@ -1,14 +1,10 @@
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_absolute_error, mean_absolute_percentage_error
-from .models.helpers import show_breakdown_by_workout, unstack_series
+from sklearn.metrics import mean_absolute_error
+from .models.helpers import show_breakdown_by_workout, unstack_series, show_comparison
 import pandas as pd
 import numpy as np
 import torch
 from torch import nn
-
-
-
-
 
 class BaseModeler:
     def __init__(self, config: dict = {}):
@@ -36,10 +32,6 @@ class BaseModeler:
             "Mean Absolute Error:",
             round(mean_absolute_error(self.y_test, self.y_pred), 2),
         )
-        print(
-            "Mean Absolute Percentage Error:",
-            round(mean_absolute_percentage_error(self.y_test, self.y_pred), 2),
-        )
 
         if "idx_to_workout_name" in meta_data and "idx_to_athlete_id" in meta_data:
             y_test_unstacked = unstack_series(self.y_test, meta_data)
@@ -54,7 +46,29 @@ class BaseModeler:
 
             show_breakdown_by_workout(y_pred_unstacked, y_test_unstacked)
 
+        self.get_comparative_stats()
 
+    # get comparative stats
+    def get_comparative_stats(self):
+        baseline_model = BaselineModel()
+        baseline_model.fit(X = self.x_train, y = self.y_train)
+        baseline_results = baseline_model.predict(X = self.x_test)
+
+        show_comparison(target=self.y_test, benchmark=baseline_results, predictions=self.y_pred)
+
+class BaselineModel(BaseModeler):
+    """
+    Placeholder model that just predicts the mean of y values, 
+    helps for comparative evaluation purposes when making changes to our target variable
+    """
+    def fit(self, X, y):
+        self.x_train = X
+        self.y_train = y
+
+    def predict(self, X):
+        self.y_pred =  np.ones(X.shape[0])* self.y_train.mean()
+        return self.y_pred
+        
 class RandomForestModel(BaseModeler):
     def __init__(self, **kwargs):
         config = kwargs.pop("config", None)
@@ -106,7 +120,8 @@ class NeuralNetV0(BaseModeler,nn.Module):
         return self.model(x)
 
     def fit(self, X, y, epochs=1000, lr=0.001):
-
+        self.x_train = X
+        self.y_train = y
         X_train_torch = torch.tensor(X.values,dtype = torch.float32)
         y_train_torch = torch.tensor(y.values,dtype = torch.float32).view(-1,1)
 
@@ -131,14 +146,12 @@ class NeuralNetV0(BaseModeler,nn.Module):
                 print(f"Epoch: {epoch} | Training Loss: {loss.item():.4f}")
 
     def predict(self, X_test):
-
+        self.x_test = X_test
         X_test_torch = torch.tensor(X_test.values,dtype = torch.float32)
 
-        print("Predict method called")
         self.eval()  # Set the model in evaluation mode
         with torch.inference_mode():
             self.y_pred = self.forward(X_test_torch).detach().numpy().squeeze()  # Convert predictions to numpy
-        print(self.y_pred.shape)
         return self.y_pred
 
     def show_results(self, **kwargs):
