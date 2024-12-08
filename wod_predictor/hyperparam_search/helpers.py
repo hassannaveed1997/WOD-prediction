@@ -50,12 +50,12 @@ def load_train_val_test_data(
     splitter = DataSplitter(
         sample=sample, test_ratio=val_test_ratio, test_filter='23.*'
     )
+    train_data, val_test_data = splitter.split(data)
+
     val_test_splitter = DataSplitter(
-        sample=int(sample * val_test_ratio),
         test_ratio=test_ratio/val_test_ratio,
         test_filter='23.*'
     )
-    train_data, val_test_data = splitter.split(data)
     val_data, test_data = val_test_splitter.split(val_test_data)
     return train_data, val_data, test_data
 
