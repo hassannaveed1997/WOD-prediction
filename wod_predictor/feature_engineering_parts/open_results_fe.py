@@ -203,14 +203,15 @@ class OpenResultsFE(BaseFEPipelineObject):
         if scale_args is None or "method" not in scale_args:
             return None
 
-        scale_method = scale_args.pop("method")
+        scale_args_ = scale_args.copy()
+        scale_method = scale_args_.pop("method")
         if scale_method == "quantile":
             scaler = QuantileScaler()
         elif scale_method == "standard":
             scaler = StandardScalerByWod()
         elif scale_method == "general":
             assert "scaler_name" in scale_args, "To use general scaler, you must specify scaler_name"
-            scaler = GenericSklearnScaler(**scale_args)
+            scaler = GenericSklearnScaler(**scale_args_)
         else:
             raise ValueError(
                 "Invalid scaling method. Must be either percentile, standard, or general."
