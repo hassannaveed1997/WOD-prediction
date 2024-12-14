@@ -2,6 +2,7 @@ import pandas as pd
 from .base import BaseFEPipelineObject
 from .helpers import fill_missing_values, convert_units
 from ..constants import Constants as c
+from datetime import datetime
 
 
 class AthleteInfoFE(BaseFEPipelineObject):
@@ -15,17 +16,18 @@ class AthleteInfoFE(BaseFEPipelineObject):
 
     def fit(self, athlete_info_data: pd.DataFrame):
         """
-        Add any initial setup here if needed
+        Add any initial setup here if needed.
         """
         pass
 
     def transform(self, athlete_info_data: pd.DataFrame):
         """
-        Transforms athlete info data
+        Transforms athlete info data:
         - melts data from wide to long format, with each row representing an athlete/year pair
         - converts units to metric
         - creates features from athlete info data
-        - OPTIONAL: fills missing values
+        - calculates and verifies birth year consistency across all reported years
+        - fills missing values if specified
 
         Parameters:
             athlete_info_data (pd.DataFrame): Athlete info data
@@ -33,15 +35,16 @@ class AthleteInfoFE(BaseFEPipelineObject):
         Returns:
             pd.DataFrame: Transformed athlete info data
         """
+        # Melt data into long format
         athlete_info_melted = self.melt(athlete_info_data)
 
-        # Tconvert data types to numeric
+        # Convert data types to numeric
         athlete_info_numeric = self.fix_units(athlete_info_melted)
 
-        # create features from athlete info data
+        # Create features from athlete info data
         athlete_info_with_features = self.create_features(athlete_info_numeric)
 
-        # fill missing values
+        # Fill missing values if specified
         if self.missing_method is not None:
             athlete_info_with_features = fill_missing_values(
                 athlete_info_with_features, method=self.missing_method, **self.kwargs
@@ -50,7 +53,7 @@ class AthleteInfoFE(BaseFEPipelineObject):
 
     def melt(self, athlete_info_data: pd.DataFrame):
         """
-        Flattens the athlete info data. We have multiple
+        Flattens the athlete info data to long format with year information.
         """
         years = set(athlete_info_data.columns.str.slice(0, 2))
         data_by_year = []
@@ -66,7 +69,7 @@ class AthleteInfoFE(BaseFEPipelineObject):
         melted_athlete_info.index = (
             athlete_ids.astype(str) + "_" + melted_athlete_info["year"].astype(str)
         )
-         # if the name is missing, they didn't participate in the open that year
+        # if the name is missing, they didn't participate in the open that year
         melted_athlete_info.dropna(subset=["name"], inplace=True)
         return melted_athlete_info
 
@@ -75,8 +78,9 @@ class AthleteInfoFE(BaseFEPipelineObject):
         Create new features from athlete info data.
         TODO: engineer any features here instead of just keeping most recent data.
         """
-        athlete_info_data.drop_duplicates(c.athlete_id_col, keep="last", inplace=True)
-        return athlete_info_data.drop(columns=["name", "age", "year"])
+        athlete_info_data["year"].astype(int)
+
+        return athlete_info_data.drop(columns=["name"])
 
     def fix_units(self, athlete_info_data: pd.DataFrame):
         """

@@ -30,7 +30,9 @@ class DataPreprocessor:
         self.benchmark_fe_transformer = BenchmarkStatsFE(
             **self.config.get("benchmark_stats", {})
         )
-        self.athleteinfo_fe_transformer = AthleteInfoFE(**self.config.get("athlete_info", {}))
+        self.athleteinfo_fe_transformer = AthleteInfoFE(
+            **self.config.get("athlete_info", {})
+        )
 
     def fit(self, data):
         # initalize all feature engineering objects
@@ -54,7 +56,7 @@ class DataPreprocessor:
         corresponding methods and concatenating the results.
 
         Also one hot encodes categorical variables.
-        
+
         Parameters:
             data (dict): Input data dictionary containing open results
             and benchmark stats.
@@ -66,8 +68,8 @@ class DataPreprocessor:
 
         fe_data = []
 
-        X, y = self.transform_open_results(data)
-        fe_data.append(X)
+        open_results, y = self.transform_open_results(data)
+        fe_data.append(open_results)
 
         if "benchmark_stats" in self.config:
             benchmark_stats = self.transform_benchmark_stats(data)
@@ -78,14 +80,9 @@ class DataPreprocessor:
             fe_data.append(athlete_info)
 
         # join all feature engineered data together
-        fe_data = reduce(
-            lambda left, right: pd.merge(left, right, on=c.athlete_id_col, how="left"),
-            fe_data,
-        )
-        fe_data.drop(columns=[c.athlete_id_col], inplace=True)
-        fe_data.index = X.index
+        fe_data_merged = self._merge_data(fe_data)
 
-        output = {"X": fe_data, "y": y, "meta_data": self.meta_data}
+        output = {"X": fe_data_merged, "y": y, "meta_data": self.meta_data}
         return output
 
     def transform_open_results(self, data):
@@ -130,9 +127,7 @@ class DataPreprocessor:
         """
 
         # filter on intersecting athletes
-        index = data["open_results"].index.intersection(
-            data["benchmark_stats"].index
-        )
+        index = data["open_results"].index.intersection(data["benchmark_stats"].index)
         benchmark_df = data["benchmark_stats"].loc[index]
 
         benchmark_stats = self.benchmark_fe_transformer.transform(benchmark_df)
@@ -150,11 +145,28 @@ class DataPreprocessor:
         """
 
         # filter on intersecting athletes
-        index = data["open_results"].index.intersection(
-            data["athlete_info"].index
-        )
+        index = data["open_results"].index.intersection(data["athlete_info"].index)
         athlete_info_df = data["athlete_info"].loc[index]
 
         athlete_info = self.athleteinfo_fe_transformer.transform(athlete_info_df)
 
         return athlete_info
+
+    def _merge_data(self, datasets):
+        """
+        merges fe data together based on athlete id and year
+        """
+        merged_df = datasets[0].copy()  # choose first as base to merge on
+        for sub_df in datasets[1:]:
+            # select columns to merge on by intersection with those of interest
+            cols_to_merge_on = (
+                set([c.athlete_id_col, c.year_col])
+                .intersection(set(sub_df.columns))
+                .intersection(set(merged_df.columns))
+            )
+            merged_df = pd.merge(
+                merged_df, sub_df, on=list(cols_to_merge_on), how="left"
+            )
+        merged_df.set_index(datasets[0].index, inplace=True)
+        merged_df.drop(columns=["year", "athlete_id"], inplace=True)
+        return merged_df
