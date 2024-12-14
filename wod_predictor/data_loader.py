@@ -9,10 +9,10 @@ class DataLoader:
     """
     A class for loading data for WOD prediction.
 
-    Loads the open results, athlete info (not implemented), workout
+    Loads the open results, athlete info (age pending), workout
     descriptions, and benchmark stats data into a dictionary with keys:
         - open_results
-        - athlete_info (not implemented)
+        - athlete_info (age pending)
         - workout_descriptions
         - benchmark_stats
 
@@ -99,8 +99,19 @@ class DataLoader:
         athlete_info = {}
         for file in files:
             if file.endswith("info.csv"):
-                year = file.split("_")[0]
+
+                # Parse the file name for year and gender
+                file_name_split = file.split("_")
+                year = file_name_split[0]
+                gender = file_name_split[1]
+
+                # Create the DataFrame from the file content
                 df = pd.read_csv(os.path.join(self.root_path, file))
+
+                if gender == 'Mens':
+                    df['gender_male'] = 1
+                else:
+                    df['gender_male'] = 0
 
                 df.set_index("id", inplace=True)
                 # Drop the 'Unnamed: 0' column-which is just an index
@@ -158,13 +169,11 @@ class DataLoader:
         benchmark_stats = pd.read_csv(
             os.path.join(
                 self.root_path,
-                "benchmark_stats/2023_BenchMarkStats_men3_cleaned.csv",
+                "benchmark_stats/Benchmark_stats_cleaned.csv",
             )
         )
-        if "Unnamed: 0" in benchmark_stats.columns:
-            benchmark_stats.drop(columns=["Unnamed: 0"], inplace=True)
 
-        benchmark_stats.set_index("id", inplace=True)
+        benchmark_stats.set_index("athlete_id", inplace=True)
 
         return benchmark_stats
 

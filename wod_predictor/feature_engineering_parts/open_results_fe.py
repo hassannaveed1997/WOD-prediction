@@ -2,9 +2,9 @@ import pandas as pd
 import numpy as np
 import numpy as np
 from .base import BaseFEPipelineObject
-from .helpers import convert_to_floats, seperate_scaled_workouts
+from .helpers import convert_to_floats, seperate_scaled_workouts, remove_suffixes, remove_scaled_workout_columns
 from ..constants import Constants as c
-from .normalization import QuantileScaler, StandardScalerByWod
+from .normalization import QuantileScaler, StandardScalerByWod, GenericSklearnScaler
 
 
 class OpenResultsFE(BaseFEPipelineObject):
@@ -33,15 +33,17 @@ class OpenResultsFE(BaseFEPipelineObject):
         self,
         create_description_embeddings=False,
         scale_up=False,
-        scale_method=None,
+        scale_args=None,
+        allow_modified = True,
         **kwargs
     
     ):
         self.columns = []
         self.create_description_embeddings = create_description_embeddings
         self.scale_up = scale_up
-        self.scaler = self.initialize_scaler(scale_method)
+        self.allow_modified = allow_modified
         self.kwargs = kwargs
+        self.scaler = self.initialize_scaler(scale_args)
 
         super().__init__()
 
@@ -76,8 +78,8 @@ class OpenResultsFE(BaseFEPipelineObject):
         creates new index post melting with athlete id and workout id concatenated
         """
         # make the names smaller
-        workout_ids = workout_ids.str.replace("_scaled", "s")
-        workout_ids = workout_ids.str.replace("_foundation", "f")
+        workout_ids = workout_ids.str.replace(c.scaled_tag, "s")
+        workout_ids = workout_ids.str.replace(c.foundation_tag, "f")
         workout_ids = workout_ids.str.replace(".", "_")
 
         # concatenate the two
@@ -100,6 +102,10 @@ class OpenResultsFE(BaseFEPipelineObject):
         """
         # get a list of all possible columns
         temp_df = seperate_scaled_workouts(open_data)
+        if not self.allow_modified:
+            temp_df = remove_scaled_workout_columns(temp_df)
+        temp_df = remove_suffixes(temp_df)
+
         if self.create_description_embeddings:
             raise NotImplementedError
         else:
@@ -137,6 +143,7 @@ class OpenResultsFE(BaseFEPipelineObject):
         open_data = seperate_scaled_workouts(open_data)
 
         # convert to floats (instead of reps, lbs time or mixed data types)
+        open_data = remove_suffixes(open_data)
         open_data = convert_to_floats(
             open_data, workout_descriptions, scale_up=self.scale_up
         )
@@ -160,7 +167,7 @@ class OpenResultsFE(BaseFEPipelineObject):
             )
         else:
             # one hot encode the workouts
-            workout_dummies = pd.get_dummies(open_data["workout"])
+            workout_dummies = pd.get_dummies(open_data["workout"]).astype(float)
             # ensure that the columns are in the same order
             for col in self.columns:
                 if col not in workout_dummies.columns:
@@ -192,15 +199,21 @@ class OpenResultsFE(BaseFEPipelineObject):
             workout_name_mapping = data[workout_cols].idxmax(axis=1)
         return workout_name_mapping
 
-    def initialize_scaler(self, scale_method):
-        if scale_method is None:
+    def initialize_scaler(self, scale_args):
+        if scale_args is None or "method" not in scale_args:
             return None
-        elif scale_method == "quantile":
+
+        scale_args_ = scale_args.copy()
+        scale_method = scale_args_.pop("method")
+        if scale_method == "quantile":
             scaler = QuantileScaler()
         elif scale_method == "standard":
             scaler = StandardScalerByWod()
+        elif scale_method == "general":
+            assert "scaler_name" in scale_args, "To use general scaler, you must specify scaler_name"
+            scaler = GenericSklearnScaler(**scale_args_)
         else:
             raise ValueError(
-                "Invalid scaling method. Must be either percentile or standard."
+                "Invalid scaling method. Must be either percentile, standard, or general."
             )
         return scaler
