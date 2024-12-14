@@ -66,6 +66,7 @@ class OpenResultsFE(BaseFEPipelineObject):
 
         # recreate index
         open_data_melted[c.athlete_id_col] = open_data_melted.index
+        open_data_melted[c.year_col] = open_data_melted['workout'].str.slice(0,2)
         open_data_melted.index = self.create_index(
             open_data_melted.index, open_data_melted["workout"]
         )
