@@ -44,14 +44,15 @@ class BenchmarkStatsFE(BaseFEPipelineObject):
             self.drop_features = None
         
         if scale_args is not None:
-            scale_method = scale_args.pop("method")
+            scale_args_ = scale_args.copy()
+            scale_method = scale_args_.pop("method")
             if scale_method == "standard":
                 self.scaler = StandardScalerByWod()
             elif scale_method == "quantile":
                 self.scaler = QuantileScaler()
             elif scale_method == "general":
                 assert "scaler_name" in scale_args, "To use general scaler, you must specify scaler_name"
-                self.scaler = GenericSklearnScaler(**scale_args)
+                self.scaler = GenericSklearnScaler(**scale_args_)
             else:
                 warnings.warn(f"{scale_method} is currently not implemented. No scaling is performed for benchmark_stats")
                 self.scaler = None

@@ -1,12 +1,16 @@
+from abc import ABC, abstractmethod
+
+import pandas as pd
+import numpy as np
+
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error
 from .models.helpers import show_breakdown_by_workout, unstack_series, show_comparison
-import pandas as pd
-import numpy as np
+
 import torch
 from torch import nn
 
-class BaseModeler:
+class BaseModeler(ABC):
     def __init__(self, config: dict = {}):
         self.config = config
         self.x_train = None
@@ -16,9 +20,11 @@ class BaseModeler:
         self.y_pred = None
         self.model = None
 
+    @abstractmethod
     def fit(self, X, y):
         raise NotImplementedError
 
+    @abstractmethod
     def predict(self, X):
         raise NotImplementedError
 
@@ -85,7 +91,7 @@ class RandomForestModel(BaseModeler):
         self.model.fit(self.x_train, self.y_train)
 
     def predict(self, X):
-        print('random forest method called')
+        # print('random forest method called')
         self.x_test = X
         self.y_pred = self.model.predict(X)
         return self.y_pred
@@ -93,28 +99,29 @@ class RandomForestModel(BaseModeler):
     def show_results(self, **kwargs):
         super().show_results(**kwargs)
 
-class NeuralNetV0(BaseModeler,nn.Module):
+class NeuralNetV0(BaseModeler, nn.Module):
     def __init__(self, input_features, hidden_units, output_features, config: dict = {}):
         BaseModeler.__init__(self)
         nn.Module.__init__(self)
 
         # Define the layers in the model
         self.model = nn.Sequential(
-        nn.Linear(in_features = input_features, out_features = hidden_units),
-        nn.ReLU(),
-        nn.Linear(in_features = hidden_units, out_features = hidden_units),
-        nn.ReLU(),
-        nn.Linear(in_features = hidden_units, out_features = hidden_units),
-        nn.ReLU(),
-        #nn.Dropout(p=0.2),
-        nn.Linear(in_features = hidden_units, out_features = hidden_units),
-        nn.ReLU(),
-        nn.Linear(in_features = hidden_units, out_features = hidden_units),
-        nn.ReLU(),
-        nn.Linear(in_features = hidden_units, out_features = hidden_units),
-        nn.ReLU(),
-        nn.Linear(in_features = hidden_units, out_features = output_features),
+            nn.Linear(in_features = input_features, out_features = hidden_units),
+            nn.ReLU(),
+            nn.Linear(in_features = hidden_units, out_features = hidden_units),
+            nn.ReLU(),
+            nn.Linear(in_features = hidden_units, out_features = hidden_units),
+            nn.ReLU(),
+            #nn.Dropout(p=0.2),
+            nn.Linear(in_features = hidden_units, out_features = hidden_units),
+            nn.ReLU(),
+            nn.Linear(in_features = hidden_units, out_features = hidden_units),
+            nn.ReLU(),
+            nn.Linear(in_features = hidden_units, out_features = hidden_units),
+            nn.ReLU(),
+            nn.Linear(in_features = hidden_units, out_features = output_features),
         )
+        self.verbose = config.get("verbose", False)
     
     def forward(self, x):
         return self.model(x)
@@ -142,13 +149,16 @@ class NeuralNetV0(BaseModeler,nn.Module):
             optimizer.step()
 
             # Print every 100 epochs
-            if epoch % 100 == 0:
+            if epoch % 100 == 0 and self.verbose:
                 print(f"Epoch: {epoch} | Training Loss: {loss.item():.4f}")
 
     def predict(self, X_test):
         self.x_test = X_test
         X_test_torch = torch.tensor(X_test.values,dtype = torch.float32)
 
+        if self.verbose:
+            print("Predict method called")
+            
         self.eval()  # Set the model in evaluation mode
         with torch.inference_mode():
             self.y_pred = self.forward(X_test_torch).detach().numpy().squeeze()  # Convert predictions to numpy
