@@ -32,6 +32,7 @@ class OpenResultsFE(BaseFEPipelineObject):
         
         self,
         create_description_embeddings=False,
+        conversion_method = 'rpm',
         scale_up=False,
         scale_args=None,
         allow_modified = True,
@@ -40,6 +41,7 @@ class OpenResultsFE(BaseFEPipelineObject):
     ):
         self.columns = []
         self.create_description_embeddings = create_description_embeddings
+        self.conversion_method = conversion_method
         self.scale_up = scale_up
         self.allow_modified = allow_modified
         self.kwargs = kwargs
@@ -115,9 +117,10 @@ class OpenResultsFE(BaseFEPipelineObject):
 
         # fit normalization methods
         temp_df = convert_to_floats(
-            temp_df, workout_descriptions, scale_up=self.scale_up
+            temp_df, workout_descriptions, conversion_method = self.conversion_method, scale_up=self.scale_up
         )
-        self.scaler.fit(temp_df)
+        if self.scaler:
+            self.scaler.fit(temp_df)
 
         return
 
@@ -146,11 +149,12 @@ class OpenResultsFE(BaseFEPipelineObject):
         # convert to floats (instead of reps, lbs time or mixed data types)
         open_data = remove_suffixes(open_data)
         open_data = convert_to_floats(
-            open_data, workout_descriptions, scale_up=self.scale_up
+            open_data, workout_descriptions, conversion_method = self.conversion_method, scale_up=self.scale_up
         )
 
-        # TODO: normalize data here
-        open_data = self.scaler.transform(open_data)
+        # scale data if possible
+        if self.scaler:
+            open_data = self.scaler.transform(open_data)
 
         # convert to percentiles (if requested)
         open_data = self.melt_data(open_data)
@@ -186,7 +190,8 @@ class OpenResultsFE(BaseFEPipelineObject):
 
     def create_meta_data(self, df):
         self.meta_data["idx_to_workout_name"] = self.get_workout_name_mapping(df)
-        self.meta_data["scaler"] = self.scaler
+        if self.scaler is not None:
+            self.meta_data["scaler"] = self.scaler
         return
 
     @staticmethod

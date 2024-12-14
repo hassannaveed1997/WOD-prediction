@@ -88,7 +88,7 @@ def convert_units(df, type, columns=None):
         The modified dataframe with the converted columns
 
     """
-    df  = df.copy()
+    df = df.copy()
     # if no columns are provided, use all columns except 'name'
     if not columns:
         columns = list(df.columns)
@@ -147,18 +147,18 @@ def remove_suffixes(df):
                 df[col] = df[col].str.replace(suffix, "")
     return df
 
+
 def remove_scaled_workout_columns(df):
-    workout_cols = [
-            col for col in df.columns if "." in col
-        ]
-    
+    workout_cols = [col for col in df.columns if "." in col]
+
     cols_to_drop = []
     for col in workout_cols:
         if col.endswith(c.foundation_tag) or col.endswith(c.scaled_tag):
             cols_to_drop.append(col)
-    
-    df.drop(cols_to_drop, axis = 1, inplace = True)
+
+    df.drop(cols_to_drop, axis=1, inplace=True)
     return df
+
 
 def seperate_scaled_workouts(df, columns=None):
     """
@@ -202,7 +202,7 @@ def seperate_scaled_workouts(df, columns=None):
     return df
 
 
-def convert_time_cap_workout_to_reps(x, total_reps, time_cap, scale_up=False):
+def _convert_single_time_cap_workout_to_reps(x, total_reps, time_cap, scale_up=False):
     """
     Here x can either be in reps or a time. For example, if the workout had a total of 100 reps and a time cap of 20 minutes,
     and the athlete finished in 15 minutes, we could do two things:
@@ -230,22 +230,24 @@ def convert_time_cap_workout_to_reps(x, total_reps, time_cap, scale_up=False):
         elif (
             ":" in x
         ):  # if x is reported as a time, athlete finished workout which needs to be converted to reps
-            x = time_delta_format[: len(time_delta_format) - len(x)] + x # fixes format to "00:00:00"
+            x = (
+                time_delta_format[: len(time_delta_format) - len(x)] + x
+            )  # fixes format to "00:00:00"
             # fixes format of time_cap
             time_cap = str(time_cap) + ":00"
             time_cap = (
                 time_delta_format[: len(time_delta_format) - len(time_cap)] + time_cap
             )
-            
-            if scale_up and total_reps is not None: # return total_reps * time_cap / x
+
+            if scale_up and total_reps is not None:  # return total_reps * time_cap / x
                 # Convert the time strings into timedelta objects
                 time_cap = pd.to_timedelta(time_cap)
                 x = pd.to_timedelta(x)
                 # Find scaling factor using total number of seconds in each time object
                 scaling_factor = time_cap.total_seconds() / x.total_seconds()
-            else: # return total_reps
+            else:  # return total_reps
                 scaling_factor = 1
-            
+
             return total_reps * scaling_factor
 
         else:  # athlete did not finish workout, they have a score in reps which can be returned as is
@@ -256,7 +258,7 @@ def convert_time_cap_workout_to_reps(x, total_reps, time_cap, scale_up=False):
         )
 
 
-def convert_time_cap_workout_to_time(
+def _convert_single_time_cap_workout_to_time(
     x: str, total_reps: int, time_cap: int, scale_up=False
 ):
     """
@@ -305,15 +307,95 @@ def convert_time_cap_workout_to_time(
             else:
                 scaling_factor = 1
 
-            return time_cap * scaling_factor 
+            return time_cap * scaling_factor
     except Exception as e:
         warnings.warn(
             f"Could not convert {x_orig} to time, returning as is. Error: {e}"
         )
 
 
+def convert_time_cap_workout_to_time(
+    x: pd.Series, total_reps: int, time_cap: int, scale_up=False
+):
+    """
+    wrapper around single function, refer to helper
+    """
+    x_as_time =  x.apply(
+        lambda x: _convert_single_time_cap_workout_to_time(
+            x,
+            total_reps,
+            time_cap,
+            scale_up=scale_up,
+        )
+    )
+    x_as_float = x_as_time.dt.seconds/60
+    return x_as_float
+
+
+def convert_time_cap_workout_to_reps(
+    x: pd.Series, total_reps: int, time_cap: int, scale_up=False
+):
+    """
+    wrapper around single function, refer to helper
+    """
+    return x.apply(
+        lambda x: _convert_single_time_cap_workout_to_reps(
+            x,
+            total_reps,
+            time_cap,
+            scale_up=scale_up,
+        )
+    )
+
+
+def convert_rpm(x: pd.Series, total_reps, time_cap, scale_up=True):
+    """
+    Converts a mixed column into floats
+    """
+    if scale_up == False:
+        warnings.warn(
+            "Using RPM method with scale up = False. Set to True for best results"
+        )
+    pd.set_option("future.no_silent_downcasting", True)  # to silence a warning
+    rpm = pd.Series(index=x.index, dtype=float)
+
+    missing_index = x.isnull()
+    is_timed = x.str.contains(":").fillna(False).astype(bool)
+    timed_indices = x.loc[is_timed & ~missing_index].index
+    reps_indices = x.loc[~is_timed & ~missing_index].index
+    max_reps = 0
+    if len(reps_indices) > 0:
+        numeric_results = pd.to_numeric(x.loc[reps_indices], errors="coerce")
+        max_reps = max(numeric_results)
+        rpm_from_reps = numeric_results / time_cap
+        rpm.loc[reps_indices] = rpm_from_reps.astype(float)
+
+    if len(timed_indices) > 0:
+        if time_cap is None:
+            raise ValueError("Timecap must be provided for workouts that are for time")
+        if max_reps > total_reps:
+            raise Warning(
+                f"Timecap must be greater than the maximum reps in the dataset, please sanity check the descriptions and data. Workout {x.name} has observed max reps: {max_reps}, but given total reps: {total_reps}"
+            )
+        # apply the time conversion function
+        times = x.loc[timed_indices].apply(
+            lambda x: _convert_single_time_cap_workout_to_time(
+                x, total_reps, time_cap, scale_up=scale_up
+            )
+        )
+        times_in_minutes = times.dt.total_seconds() / 60
+        rpm_from_time = total_reps / times_in_minutes
+
+        rpm.loc[timed_indices] = rpm_from_time.astype(float)
+
+    return rpm
+
+
 def convert_to_floats(
-    df: pd.DataFrame, descriptions: dict, threshold=0.5, scale_up=False
+    df: pd.DataFrame,
+    descriptions: dict,
+    conversion_method="rpm",
+    scale_up=True,
 ):
     """
     This function will take a workout from the open, such as 17.1, 17.3, etc. and convert it to a float. It is intended to be a standard way to convert workouts to floats.
@@ -325,6 +407,8 @@ def convert_to_floats(
         The dataframe with the scores for the workout
     description: str
         The description of crossfit open workouts as a dictionary. It will contain fields such as "goal", "reps", "time_cap", etc.
+    conversion_method: str
+        Allows multiple conversion methods for mixed data types. Options are "to_time", "to_reps", "rpm" (reps per minute).
     Returns:
     -------
     df_modified: pd.DataFrame
@@ -333,52 +417,42 @@ def convert_to_floats(
     """
     df_modified = df.copy()
     df_modified.columns = [col.replace("_score", "") for col in df_modified.columns]
+    df_modified.replace("--", "", inplace=True)
+
+    # determine function based on goal
+    func_by_goal_mapping = {
+        "load": {"function": pd.to_numeric, "kwargs": {"errors": "ignore"}},
+        "amrap": {"function": pd.to_numeric, "kwargs": {"errors": "ignore"}},
+        "for time": {"function": pd.to_numeric, "kwargs": {"errors": "ignore"}},
+    }
+
+    match conversion_method:
+        case "rpm":
+            func_by_goal_mapping["amrap"] = {"function": convert_rpm}
+            func_by_goal_mapping["for time"] = {"function": convert_rpm}
+        case "to_reps":
+            func_by_goal_mapping["for time"] = {
+                "function": convert_time_cap_workout_to_reps
+            }
+        case "to_time":
+            func_by_goal_mapping["for time"] = {
+                "function": convert_time_cap_workout_to_time
+            }
+
     for workout_name in df_modified.columns:
-        # remove any suffixes from the workout name for easy lookup
-        workout_name_base = workout_name.replace(c.scaled_tag, "").replace(
-            c.foundation_tag, ""
-        )
+        workout_name_base = _get_workout_base_name(workout_name, descriptions)
 
-        # if we don't have the workout name in descriptions, we skip it
-        if workout_name_base not in descriptions:
-            warnings.warn(
-                f"Workout {workout_name} not found in descriptions, skipping preprocessing. Please inspect manually"
-            )
-            continue
+        goal = descriptions[workout_name_base]["goal"].lower()
+        funct_to_apply = func_by_goal_mapping[goal]["function"]
+        kwargs = func_by_goal_mapping[goal].get("kwargs")
+        if kwargs is None:  # set kwargs if not available
+            kwargs = {
+                "total_reps": descriptions[workout_name_base]["total_reps"],
+                "time_cap": descriptions[workout_name_base]["time_cap"],
+                "scale_up": scale_up,
+            }
 
-        # if workout is for REPS, we should be fine
-        if descriptions[workout_name_base]["goal"].lower() in ["reps", "amrap"]:
-            df_modified[workout_name] = pd.to_numeric(
-                df_modified[workout_name], errors="ignore"
-            )
-            # TODO: handle any edge cases here
-
-        elif descriptions[workout_name_base]["goal"].lower() == "for time":
-            if descriptions[workout_name_base]["time_cap"] is not None:
-                # if the workout has a time cap, some athletes might not have finished it.
-                # The ones that finished would have a time, the rest would have reps completed until the timecap.
-                df_modified[workout_name] = df_modified[workout_name].apply(
-                    lambda x: convert_time_cap_workout_to_reps(
-                        x,
-                        descriptions[workout_name_base]["total_reps"],
-                        descriptions[workout_name_base]["time_cap"],
-                        scale_up=scale_up,
-                    )
-                )
-            else:
-                # if there is no time cap, raise error
-                raise ValueError(
-                    f"Workout {workout_name} is for time, but does not have a time cap. Please inspect descriptions manually"
-                )
-        elif descriptions[workout_name_base]["goal"].lower() == "load":
-            # remove anny "--"
-            df_modified[workout_name] = df_modified[workout_name].str.replace("--", "")
-            # if the workout is for load, we can convert it to a float
-            df_modified[workout_name] = pd.to_numeric(df_modified[workout_name])
-        else:
-            raise ValueError(
-                f"Workout {workout_name} has an unknown goal. Please inspect descriptions manually"
-            )
+        df_modified[workout_name] = funct_to_apply(df_modified[workout_name], **kwargs)
 
         # manual inspection
         try:
@@ -391,3 +465,17 @@ def convert_to_floats(
     df_modified = df_modified.astype(float)
 
     return df_modified
+
+
+def _get_workout_base_name(workout_name, descriptions):
+    # remove any suffixes from the workout name for easy lookup
+    workout_name_base = workout_name.replace(c.scaled_tag, "").replace(
+        c.foundation_tag, ""
+    )
+
+    # if we don't have the workout name in descriptions, we skip it
+    if workout_name_base not in descriptions:
+        raise ValueError(
+            f"Workout {workout_name} not found in descriptions, skipping preprocessing. Please inspect manually"
+        )
+    return workout_name_base

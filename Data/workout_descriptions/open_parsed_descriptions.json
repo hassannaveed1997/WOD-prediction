@@ -56,7 +56,7 @@
     "18.4": {
         "goal": "For Time",
         "time_cap": 9,
-        "total_reps": 129,
+        "total_reps": 165,
         "description": "21 deadlifts (225 lb), 21 handstand push-ups, 15 deadlifts (225 lb), 15 handstand push-ups, 9 deadlifts (225 lb), 9 handstand push-ups, 21 deadlifts (315 lb), 50-ft. handstand walk, 15 deadlifts (315 lb), 50-ft. handstand walk, 9 deadlifts (315 lb), 50-ft. handstand walk"
     },
     "18.5": {
@@ -80,7 +80,7 @@
     "19.3": {
         "goal": "For Time",
         "time_cap": 10,
-        "total_reps": 102,
+        "total_reps": 180,
         "description": "200-ft. dumbbell overhead lunge, 50 dumbbell box step-ups, 50 strict handstand push-ups, 200-ft. handstand walk, 50-lb. dumbbell, 24-in. box"
     },
     "19.4": {
@@ -110,7 +110,7 @@
     "20.3": {
         "goal": "For Time",
         "time_cap": 9,
-        "total_reps": 138,
+        "total_reps": 165,
         "description": "21 deadlifts, 225 lb. 21 handstand push-ups 15 deadlifts, 225 lb. 15 handstand push-ups 9 deadlifts, 225 lb. 9 handstand push-ups 21 deadlifts, 315 lb. 50-ft. handstand walk 15 deadlifts, 315 lb. 50-ft. handstand walk 9 deadlifts, 315 lb. 50-ft. handstand walk"
     },
     "20.4": {
@@ -122,7 +122,7 @@
     "20.5": {
         "goal": "For Time",
         "time_cap": 20,
-        "total_reps": 161,
+        "total_reps": 240,
         "description": "40 muscle-ups, 80-cal. row, 120 wall-ball shots (20-lb ball to 10\u00a0ft.)"
     },
     "21.1": {
