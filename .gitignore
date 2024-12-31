@@ -1,5 +1,6 @@
 *.pyc
 __pycache__/
+openai-api-key.txt
 *.egg-info/
 .DS_Store
 .conda/

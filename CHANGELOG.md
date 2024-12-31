@@ -13,6 +13,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **Fixed:** Description of bug fixes.
 - **Security:** Description of security improvements.
 
+## [1.0.0] - 2024-12-31
+### Added
+- Workout description encoding as vector embeddings
+- Scaling data using minmax, normalization or percentiles
+- Hyper parameter tuning infrastructure using Optuna
+- Neural Network Implementation
+- Athlete Info Feature Engineering: new columns for age, height, weight and gender
+- Option to remove scaled workouts
+- Option to drop columns with number of missing values higher than a specific threshold
+- Model comparison with a "Benchmark" to see performance lift in terms of MAE
+- New preprocessed methods to convert mixed data types into Reps per minute or simply to expected time.
+
 ## [0.2.0] - 2024-07-05
 ### Added
 - Seperate `DataSplitter` class to handle data splitting early on
