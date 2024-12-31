@@ -6,7 +6,7 @@ from sklearn import preprocessing
 from numpy.testing import assert_array_almost_equal
 import pytest
 
-from wod_predictor.feature_engineering_parts.normalization import GenericSklearnScaler
+from wod_predictor.feature_engineering_parts.utils.normalization import GenericSklearnScaler
 
 class TestGenericSklearnScaler(unittest.TestCase):
     def setUp(self):

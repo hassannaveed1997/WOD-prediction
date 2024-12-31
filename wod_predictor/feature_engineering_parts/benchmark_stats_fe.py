@@ -2,11 +2,11 @@ import warnings
 from typing import Literal, Optional, Dict, Any
 
 from .base import BaseFEPipelineObject
-from .helpers import fill_missing_values
-from .outlier_detection import IQRoutlierDetector
+from .utils.helpers import fill_missing_values
+from .utils.outlier_detection import IQRoutlierDetector
 from ..constants import Constants as c
-from .misc import DropFeatures
-from .normalization import QuantileScaler, StandardScalerByWod, GenericSklearnScaler
+from .utils.misc import DropFeatures
+from .utils.normalization import QuantileScaler, StandardScalerByWod, GenericSklearnScaler
 
 class BenchmarkStatsFE(BaseFEPipelineObject):
     """

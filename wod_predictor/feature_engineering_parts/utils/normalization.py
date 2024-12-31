@@ -9,7 +9,7 @@ from sklearn import preprocessing
 from sklearn.preprocessing import StandardScaler, QuantileTransformer
 from sklearn.utils.validation import check_is_fitted
 
-from ..constants import Constants as c
+from ...constants import Constants as c
 
 
 class BaseScaler(ABC):

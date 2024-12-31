@@ -1,9 +1,9 @@
 import pandas as pd
 import os
 from .base import BaseFEPipelineObject
-from .helpers import convert_to_floats, seperate_scaled_workouts, remove_suffixes, remove_scaled_workout_columns
+from .utils.helpers import convert_to_floats, seperate_scaled_workouts, remove_suffixes, remove_scaled_workout_columns
 from ..constants import Constants as c
-from .normalization import QuantileScaler, StandardScalerByWod, GenericSklearnScaler
+from .utils.normalization import QuantileScaler, StandardScalerByWod, GenericSklearnScaler
 from .utils.embeddings import LLMClient, reduce_dimensions_pca
 from wod_predictor.helpers import get_base_path
 

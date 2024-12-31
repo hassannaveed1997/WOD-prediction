@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import warnings
 from sklearn.impute import KNNImputer
-from ..constants import Constants as c
+from ...constants import Constants as c
 
 LB_MULTIPLIER = 2.20462
 CM_MULTIPLIER = 0.393701
