@@ -5,7 +5,7 @@ from .base import BaseFEPipelineObject
 from .helpers import convert_to_floats, seperate_scaled_workouts, remove_suffixes, remove_scaled_workout_columns
 from ..constants import Constants as c
 from .normalization import QuantileScaler, StandardScalerByWod, GenericSklearnScaler
-from .helpers import get_embedding, reduce_dimensions_pca
+from .utils.embeddings import get_embedding, reduce_dimensions_pca
 import os
 
 class OpenResultsFE(BaseFEPipelineObject):
@@ -92,15 +92,10 @@ class OpenResultsFE(BaseFEPipelineObject):
         index = athlete_ids.astype(str) + "_" + workout_ids
         return index
 
-    def description_embeddings(self):
+    def description_embeddings(self, workout_descriptions):
         """
         Generate description embeddings.
-
-        Raises:
-            NotImplementedError: This method is not implemented.
-
         """
-    def description_embeddings(self, workout_descriptions):
         if workout_descriptions is None:
             raise ValueError('Workout descriptions must be provided to create description embeddings')
         # get dir of this file
@@ -140,16 +135,14 @@ class OpenResultsFE(BaseFEPipelineObject):
             temp_df = remove_scaled_workout_columns(temp_df)
         temp_df = remove_suffixes(temp_df)
 
-        if self.create_description_embeddings:
-            raise NotImplementedError
-        else:
-            # convert to floats (instead of reps, lbs time or mixed data types)
+        if not self.create_description_embeddings:
             self.columns += list(temp_df.columns)
 
-        # fit normalization methods
+        # convert to floats (instead of reps, lbs time or mixed data types)
         temp_df = convert_to_floats(
             temp_df, workout_descriptions, conversion_method = self.conversion_method, scale_up=self.scale_up
         )
+        # fit normalization methods
         if self.scaler:
             self.scaler.fit(temp_df)
 
