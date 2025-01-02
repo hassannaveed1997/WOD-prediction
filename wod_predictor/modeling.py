@@ -6,6 +6,7 @@ import torch
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error
 from torch import nn
+from tqdm import tqdm
 
 from .models.helpers import (show_breakdown_by_workout, show_comparison,
                              unstack_series)
@@ -145,7 +146,7 @@ class NeuralNetV0(BaseModeler, nn.Module):
         loss_fn = nn.MSELoss()
         optimizer = torch.optim.Adam(params=self.parameters(), lr=lr)
 
-        for epoch in range(epochs):
+        for epoch in tqdm(range(epochs), desc="Training Progress"):
             self.train()  # Set the model in training mode
 
             # Forward pass
@@ -159,7 +160,7 @@ class NeuralNetV0(BaseModeler, nn.Module):
 
             # Print every 100 epochs
             if epoch % 100 == 0 and self.verbose:
-                print(f"Epoch: {epoch} | Training Loss: {loss.item():.4f}")
+                tqdm.write(f"Epoch: {epoch} | Training Loss: {loss.item():.4f}")
 
     def predict(self, X_test):
         self.x_test = X_test
