@@ -108,10 +108,10 @@ class DataLoader:
                 # Create the DataFrame from the file content
                 df = pd.read_csv(os.path.join(self.root_path, file))
 
-                if gender == 'Mens':
-                    df['gender_male'] = 1
+                if gender == "Mens":
+                    df["gender_male"] = 1
                 else:
-                    df['gender_male'] = 0
+                    df["gender_male"] = 0
 
                 df.set_index("id", inplace=True)
                 # Drop the 'Unnamed: 0' column-which is just an index
@@ -121,8 +121,7 @@ class DataLoader:
 
                 # Prepend the year to each column name, except 'id'
                 df.columns = [
-                    f"{year[-2:]}.{col}" if col != "id" else col
-                    for col in df.columns
+                    f"{year[-2:]}.{col}" if col != "id" else col for col in df.columns
                 ]
                 if year not in athlete_info:
                     athlete_info[year] = []

@@ -1,72 +1,12 @@
-import pandas as pd
-import numpy as np
 import warnings
-from sklearn.impute import KNNImputer
-from ..constants import Constants as c
+
+import numpy as np
+import pandas as pd
+
+from ...constants import Constants as c
 
 LB_MULTIPLIER = 2.20462
 CM_MULTIPLIER = 0.393701
-
-
-def fill_missing_values(df, method, **kwargs):
-
-    # This function will fill in missing values using the KNN algorithm. Assumes the dataset is already cleaned.
-
-    # Parameters
-    # neighbors -> number of neighbors to compare to for KNN algorithm: should be (1, 20) inclusive
-    # identifier_columns -> list of column headers related to the athlete's identity (index, ID, name)
-    # data_columns -> list of column headers that contain athletes' data
-    SUPPORTED_METHODS = ["knn", "zero", "mean", "median"]
-    if method not in SUPPORTED_METHODS:
-        raise ValueError(
-            f"Method {method} is not supported for fill_missing_values. Please use one of the following: {SUPPORTED_METHODS}"
-        )
-
-    if method == "knn":
-        df_filled = fill_missing_knn(df, **kwargs)
-        return df_filled
-    if method == "zero":
-        return df.fillna(0)
-    if method == "mean":
-        return df.fillna(df.mean())
-    if method == "median":
-        return df.fillna(df.median())
-
-
-def fill_missing_knn(df, neighbors, data_columns=[]):
-    """
-    This function will fill in missing values using the KNN algorithm. Assumes outliers are removed.
-    """
-    if (not isinstance(neighbors, int)) or neighbors <= 0 or neighbors > 20:
-        raise Exception("Invalid neighbor argument")
-
-    if not isinstance(data_columns, list):
-        raise Exception("Invalid data_columns argument")
-
-    if len(data_columns) == 0:
-        # include numeric columns only
-        data_columns = df.select_dtypes(include=["int", "float"]).columns
-
-    # must have at least one non-missing value in the column
-    data_columns = [col for col in data_columns if df[col].notnull().sum() > 0]
-
-    try:
-        df_identifiers = df.drop(columns=data_columns)
-        df_modify = df[data_columns]
-    except KeyError as e:
-        raise KeyError(
-            f"A column header in identifier_columns or data_columns is not in df: {e}"
-        )
-
-    df_modify = df_modify.fillna(value=np.nan)
-    df_modify = df_modify[:].values
-
-    imputer = KNNImputer(n_neighbors=neighbors)
-    df_KNN = imputer.fit_transform(df_modify)
-    df_KNN = pd.DataFrame(df_KNN, columns=data_columns, index=df.index)
-
-    df_KNN = pd.concat([df_identifiers, df_KNN], axis=1)
-    return df_KNN
 
 
 def convert_units(df, type, columns=None):
@@ -121,7 +61,6 @@ def convert_units(df, type, columns=None):
             df.loc[rows_with_key_words, col] = (
                 df.loc[rows_with_key_words, col] * multiplier
             )
-            print(f"Converted {col} to {type} in imperial units")
     return df
 
 
@@ -320,7 +259,7 @@ def convert_time_cap_workout_to_time(
     """
     wrapper around single function, refer to helper
     """
-    x_as_time =  x.apply(
+    x_as_time = x.apply(
         lambda x: _convert_single_time_cap_workout_to_time(
             x,
             total_reps,
@@ -328,7 +267,7 @@ def convert_time_cap_workout_to_time(
             scale_up=scale_up,
         )
     )
-    x_as_float = x_as_time.dt.seconds/60
+    x_as_float = x_as_time.dt.seconds / 60
     return x_as_float
 
 

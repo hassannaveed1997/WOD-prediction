@@ -5,4 +5,5 @@ class Constants:
     foundation_tag = "_foundation"
     scaled_tag = "_scaled"
 
+
 OPEN_AI_API_KEY_PATH = "/openai-api-key.txt"

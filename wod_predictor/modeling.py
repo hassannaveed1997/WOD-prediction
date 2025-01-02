@@ -1,14 +1,16 @@
 from abc import ABC, abstractmethod
 
-import pandas as pd
 import numpy as np
-
+import pandas as pd
+import torch
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error
-from .models.helpers import show_breakdown_by_workout, unstack_series, show_comparison
-
-import torch
 from torch import nn
+from tqdm import tqdm
+
+from .models.helpers import (show_breakdown_by_workout, show_comparison,
+                             unstack_series)
+
 
 class BaseModeler(ABC):
     def __init__(self, config: dict = {}):
@@ -57,24 +59,29 @@ class BaseModeler(ABC):
     # get comparative stats
     def get_comparative_stats(self):
         baseline_model = BaselineModel()
-        baseline_model.fit(X = self.x_train, y = self.y_train)
-        baseline_results = baseline_model.predict(X = self.x_test)
+        baseline_model.fit(X=self.x_train, y=self.y_train)
+        baseline_results = baseline_model.predict(X=self.x_test)
 
-        show_comparison(target=self.y_test, benchmark=baseline_results, predictions=self.y_pred)
+        show_comparison(
+            target=self.y_test, benchmark=baseline_results, predictions=self.y_pred
+        )
+
 
 class BaselineModel(BaseModeler):
     """
-    Placeholder model that just predicts the mean of y values, 
+    Placeholder model that just predicts the mean of y values,
     helps for comparative evaluation purposes when making changes to our target variable
     """
+
     def fit(self, X, y):
         self.x_train = X
         self.y_train = y
 
     def predict(self, X):
-        self.y_pred =  np.ones(X.shape[0])* self.y_train.mean()
+        self.y_pred = np.ones(X.shape[0]) * self.y_train.mean()
         return self.y_pred
-        
+
+
 class RandomForestModel(BaseModeler):
     def __init__(self, **kwargs):
         config = kwargs.pop("config", None)
@@ -99,44 +106,47 @@ class RandomForestModel(BaseModeler):
     def show_results(self, **kwargs):
         super().show_results(**kwargs)
 
+
 class NeuralNetV0(BaseModeler, nn.Module):
-    def __init__(self, input_features, hidden_units, output_features, config: dict = {}):
+    def __init__(
+        self, input_features, hidden_units, output_features, config: dict = {}
+    ):
         BaseModeler.__init__(self)
         nn.Module.__init__(self)
 
         # Define the layers in the model
         self.model = nn.Sequential(
-            nn.Linear(in_features = input_features, out_features = hidden_units),
+            nn.Linear(in_features=input_features, out_features=hidden_units),
             nn.ReLU(),
-            nn.Linear(in_features = hidden_units, out_features = hidden_units),
+            nn.Linear(in_features=hidden_units, out_features=hidden_units),
             nn.ReLU(),
-            nn.Linear(in_features = hidden_units, out_features = hidden_units),
+            nn.Linear(in_features=hidden_units, out_features=hidden_units),
             nn.ReLU(),
-            #nn.Dropout(p=0.2),
-            nn.Linear(in_features = hidden_units, out_features = hidden_units),
+            # nn.Dropout(p=0.2),
+            nn.Linear(in_features=hidden_units, out_features=hidden_units),
             nn.ReLU(),
-            nn.Linear(in_features = hidden_units, out_features = hidden_units),
+            nn.Linear(in_features=hidden_units, out_features=hidden_units),
             nn.ReLU(),
-            nn.Linear(in_features = hidden_units, out_features = hidden_units),
+            nn.Linear(in_features=hidden_units, out_features=hidden_units),
             nn.ReLU(),
-            nn.Linear(in_features = hidden_units, out_features = output_features),
+            nn.Linear(in_features=hidden_units, out_features=output_features),
         )
         self.verbose = config.get("verbose", False)
-    
+
     def forward(self, x):
         return self.model(x)
 
     def fit(self, X, y, epochs=1000, lr=0.001):
         self.x_train = X
         self.y_train = y
-        X_train_torch = torch.tensor(X.values,dtype = torch.float32)
-        y_train_torch = torch.tensor(y.values,dtype = torch.float32).view(-1,1)
+        X_train_torch = torch.tensor(X.values, dtype=torch.float32)
+        y_train_torch = torch.tensor(y.values, dtype=torch.float32).view(-1, 1)
 
         # Define the loss function and optimizer
         loss_fn = nn.MSELoss()
         optimizer = torch.optim.Adam(params=self.parameters(), lr=lr)
 
-        for epoch in range(epochs):
+        for epoch in tqdm(range(epochs), desc="Training Progress"):
             self.train()  # Set the model in training mode
 
             # Forward pass
@@ -150,18 +160,20 @@ class NeuralNetV0(BaseModeler, nn.Module):
 
             # Print every 100 epochs
             if epoch % 100 == 0 and self.verbose:
-                print(f"Epoch: {epoch} | Training Loss: {loss.item():.4f}")
+                tqdm.write(f"Epoch: {epoch} | Training Loss: {loss.item():.4f}")
 
     def predict(self, X_test):
         self.x_test = X_test
-        X_test_torch = torch.tensor(X_test.values,dtype = torch.float32)
+        X_test_torch = torch.tensor(X_test.values, dtype=torch.float32)
 
         if self.verbose:
             print("Predict method called")
-            
+
         self.eval()  # Set the model in evaluation mode
         with torch.inference_mode():
-            self.y_pred = self.forward(X_test_torch).detach().numpy().squeeze()  # Convert predictions to numpy
+            self.y_pred = (
+                self.forward(X_test_torch).detach().numpy().squeeze()
+            )  # Convert predictions to numpy
         return self.y_pred
 
     def show_results(self, **kwargs):

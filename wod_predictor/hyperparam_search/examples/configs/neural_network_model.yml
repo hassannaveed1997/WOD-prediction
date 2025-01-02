@@ -1,0 +1,35 @@
+preprocessing:
+  open_results: 
+    scale_up: True
+    scale_args: 
+      method: general
+      scaler_name: StandardScaler    
+  benchmark_stats: 
+    remove_outliers: True
+    missing_method: zero
+    drop_missing_threshold: 0.9
+    scale_args: 
+      method: general
+      scaler_name: StandardScaler
+  athlete_info: {}
+
+
+model: 
+  name: NeuralNetV0
+  init_args:
+    input_features: 96
+    output_features: 1
+    hidden_units: 10
+  fit_args: {"epochs": 20}
+
+tune_params:
+  lr: 
+    param_type: int
+    low: 0.0001
+    high: 0.01
+    path: ["model", "fit_args", "lr"]
+
+study:
+  tuner_args:
+    n_trials: 5
+

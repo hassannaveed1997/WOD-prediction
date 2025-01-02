@@ -1,32 +1,33 @@
 import pandas as pd
-from .base import BaseFEPipelineObject
-from .helpers import fill_missing_values, convert_units
+
+from wod_predictor.feature_engineering_parts.base import TransformerMixIn
+from wod_predictor.feature_engineering_parts.utils.missing_values import \
+    MissingValueImputation
+from .utils.normalization import (GenericSklearnScaler)
+
 from ..constants import Constants as c
-from datetime import datetime
+from .utils.helpers import convert_units
 
 
-class AthleteInfoFE(BaseFEPipelineObject):
+class AthleteInfoFE(TransformerMixIn):
     """
     Feature engineering pipeline object for athlete information.
     """
 
     def __init__(self, missing_method="zero", **kwargs):
-        self.missing_method = missing_method
-        self.kwargs = kwargs
-
-    def fit(self, athlete_info_data: pd.DataFrame):
-        """
-        Add any initial setup here if needed.
-        """
-        pass
+        # Fill missing values if specified
+        self.transformers = []
+        if missing_method is not None:
+            self.transformers.append(MissingValueImputation(method=missing_method, **kwargs))
+        
+        self.transformers.append(GenericSklearnScaler(scaler_name='MinMaxScaler'))
+        super().__init__()
 
     def transform(self, athlete_info_data: pd.DataFrame):
         """
         Transforms athlete info data:
         - melts data from wide to long format, with each row representing an athlete/year pair
         - converts units to metric
-        - creates features from athlete info data
-        - calculates and verifies birth year consistency across all reported years
         - fills missing values if specified
 
         Parameters:
@@ -41,15 +42,12 @@ class AthleteInfoFE(BaseFEPipelineObject):
         # Convert data types to numeric
         athlete_info_numeric = self.fix_units(athlete_info_melted)
 
-        # Create features from athlete info data
-        athlete_info_with_features = self.create_features(athlete_info_numeric)
+        # run any available transformers
+        numeric_cols = list(set(athlete_info_numeric.columns).difference([c.athlete_id_col, c.year_col]))
+        for transformer in self.transformers:
+            athlete_info_numeric[numeric_cols] = transformer.transform(athlete_info_numeric[numeric_cols])
 
-        # Fill missing values if specified
-        if self.missing_method is not None:
-            athlete_info_with_features = fill_missing_values(
-                athlete_info_with_features, method=self.missing_method, **self.kwargs
-            )
-        return athlete_info_with_features
+        return athlete_info_numeric
 
     def melt(self, athlete_info_data: pd.DataFrame):
         """
@@ -73,15 +71,6 @@ class AthleteInfoFE(BaseFEPipelineObject):
         melted_athlete_info.dropna(subset=["name"], inplace=True)
         return melted_athlete_info
 
-    def create_features(self, athlete_info_data: pd.DataFrame):
-        """
-        Create new features from athlete info data.
-        TODO: engineer any features here instead of just keeping most recent data.
-        """
-        athlete_info_data["year"].astype(int)
-
-        return athlete_info_data.drop(columns=["name"])
-
     def fix_units(self, athlete_info_data: pd.DataFrame):
         """
         Convert units of athlete info data.
@@ -93,4 +82,4 @@ class AthleteInfoFE(BaseFEPipelineObject):
             athlete_info_data[["weight"]], type="weight"
         )
 
-        return athlete_info_data
+        return athlete_info_data.drop(columns=["name"])
