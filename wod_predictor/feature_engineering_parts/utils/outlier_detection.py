@@ -1,11 +1,14 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
+
+from wod_predictor.feature_engineering_parts.base import TransformerMixIn
 
 
-class IQRoutlierDetector:
+class IQRoutlierDetector(TransformerMixIn):
     def __init__(self):
         self.upper_thresholds = {}
         self.lower_thresholds = {}
+        super().__init__()
 
     def fit(self, df, score_headers=None):
         df_modified = df.copy()
@@ -32,9 +35,12 @@ class IQRoutlierDetector:
         for col in score_headers:
             self.upper_thresholds[col] = upper_quartiles[col] + 1.5 * iqr[col]
             self.lower_thresholds[col] = lower_quartiles[col] - 1.5 * iqr[col]
+        super().fit()
 
     def transform(self, df):
         # find interquartile range
+        self.check_fit(df=df)
+
         df_modified = df.copy()
 
         for col in self.upper_thresholds:
@@ -42,7 +48,3 @@ class IQRoutlierDetector:
             df_modified.loc[df_modified[col] < self.lower_thresholds[col], col] = np.nan
 
         return df_modified
-
-    def fit_transform(self, df, score_headers=None):
-        self.fit(df, score_headers)
-        return self.transform(df)

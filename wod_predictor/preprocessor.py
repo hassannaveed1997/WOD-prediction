@@ -1,16 +1,16 @@
 from functools import reduce
-from .constants import Constants as c
 
 import pandas as pd
 
-from wod_predictor.feature_engineering_parts import (
-    AthleteInfoFE,
-    BenchmarkStatsFE,
-    OpenResultsFE,
-)
+from wod_predictor.feature_engineering_parts import (AthleteInfoFE,
+                                                     BenchmarkStatsFE,
+                                                     OpenResultsFE)
+from wod_predictor.feature_engineering_parts.base import TransformerMixIn
+
+from .constants import Constants as c
 
 
-class DataPreprocessor:
+class DataPreprocessor(TransformerMixIn):
     """
     Class for preprocessing data before modeling.
 
@@ -35,18 +35,9 @@ class DataPreprocessor:
         )
 
     def fit(self, data):
-        # initalize all feature engineering objects
-        self.open_fe_transformer.fit(
-            data["open_results"], data.get("workout_descriptions", None)
+        raise DeprecationWarning(
+            "fit has been deprecated, please run fit transform instead"
         )
-
-        if "benchmark_stats" in self.config:
-            self.benchmark_fe_transformer.fit(data["benchmark_stats"])
-
-        if "athlete_info" in self.config:
-            self.athleteinfo_fe_transformer.fit(data["athlete_info"])
-
-        return
 
     def transform(self, data):
         """
@@ -65,9 +56,7 @@ class DataPreprocessor:
             dict: Transformed data dictionary containing feature
             engineered data (X) and target variable (y).
         """
-
         fe_data = []
-
         open_results, y = self.transform_open_results(data)
         fe_data.append(open_results)
 

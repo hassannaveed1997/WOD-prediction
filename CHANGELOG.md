@@ -13,6 +13,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **Fixed:** Description of bug fixes.
 - **Security:** Description of security improvements.
 
+## [1.1.0] - 2024-01-02
+### Removed
+- Deprecated the fit method, now supports use of fit_transform. A context manager maintains the fit state while propagating through transformers.
 ## [1.0.0] - 2024-12-31
 ### Added
 - Workout description encoding as vector embeddings

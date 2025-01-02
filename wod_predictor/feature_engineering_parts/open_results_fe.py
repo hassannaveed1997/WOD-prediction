@@ -1,13 +1,19 @@
-import pandas as pd
 import os
-from .base import BaseFEPipelineObject
-from .utils.helpers import convert_to_floats, seperate_scaled_workouts, remove_suffixes, remove_scaled_workout_columns
-from ..constants import Constants as c
-from .utils.normalization import QuantileScaler, StandardScalerByWod, GenericSklearnScaler
-from .utils.embeddings import LLMClient, reduce_dimensions_pca
+
+import pandas as pd
+
+from wod_predictor.feature_engineering_parts.base import TransformerMixIn
 from wod_predictor.helpers import get_base_path
 
-class OpenResultsFE(BaseFEPipelineObject):
+from ..constants import Constants as c
+from .utils.embeddings import LLMClient, reduce_dimensions_pca
+from .utils.helpers import (convert_to_floats, remove_scaled_workout_columns,
+                            remove_suffixes, seperate_scaled_workouts)
+from .utils.normalization import (GenericSklearnScaler, QuantileScaler,
+                                  StandardScalerByWod)
+
+
+class OpenResultsFE(TransformerMixIn):
     """
     Feature engineering pipeline object for processing open results data.
 
@@ -29,16 +35,14 @@ class OpenResultsFE(BaseFEPipelineObject):
     """
 
     def __init__(
-        
         self,
         create_description_embeddings=False,
-        conversion_method = 'rpm',
+        conversion_method="rpm",
         scale_up=False,
         scale_args=None,
-        allow_modified = True,
-        embedding_dim = 100,
+        allow_modified=True,
+        embedding_dim=100,
         **kwargs
-    
     ):
         self.columns = []
         self.create_description_embeddings = create_description_embeddings
@@ -48,6 +52,7 @@ class OpenResultsFE(BaseFEPipelineObject):
         self.embedding_dim = embedding_dim
         self.kwargs = kwargs
         self.scaler = self.initialize_scaler(scale_args)
+        self.meta_data = {}
 
         super().__init__()
 
@@ -70,7 +75,7 @@ class OpenResultsFE(BaseFEPipelineObject):
 
         # recreate index
         open_data_melted[c.athlete_id_col] = open_data_melted.index
-        open_data_melted[c.year_col] = open_data_melted['workout'].str.slice(0,2)
+        open_data_melted[c.year_col] = open_data_melted["workout"].str.slice(0, 2)
         open_data_melted.index = self.create_index(
             open_data_melted.index, open_data_melted["workout"]
         )
@@ -90,63 +95,73 @@ class OpenResultsFE(BaseFEPipelineObject):
         # concatenate the two
         index = athlete_ids.astype(str) + "_" + workout_ids
         return index
-    
+
     def description_embeddings(self, workout_descriptions):
         """
         Generate description embeddings.
         """
         if workout_descriptions is None:
-            raise ValueError('Workout descriptions must be provided to create description embeddings')
-        
+            raise ValueError(
+                "Workout descriptions must be provided to create description embeddings"
+            )
+
         # read cache to get embeddings
         wod_prediction_path = get_base_path()
-        embedding_cache_path = os.path.join(wod_prediction_path,'cache/workout_embeddings_cache.csv')
+        embedding_cache_path = os.path.join(
+            wod_prediction_path, "cache/workout_embeddings_cache.csv"
+        )
         embeddings_df = pd.read_csv(embedding_cache_path)
-        client = LLMClient() 
+        client = LLMClient()
         new_embeddings = {}
         for key, value in workout_descriptions.items():
             if key not in embeddings_df.columns:
-                new_embeddings[key] = client.get_embedding(value['description'])
-        
+                new_embeddings[key] = client.get_embedding(value["description"])
+
         # add new embeddings to the dataframe
         new_embeddings_df = pd.DataFrame(new_embeddings)
         embeddings_df = pd.concat([embeddings_df, new_embeddings_df], axis=1)
-                
+
         # save the new embeddings to the cache
         embeddings_df.to_csv(embedding_cache_path, index=False)
 
         # reduce the dimensions of the embeddings
         if self.embedding_dim is not None:
-            embeddings_df = reduce_dimensions_pca(embeddings_df, n_components=self.embedding_dim)
-        
+            embeddings_df = reduce_dimensions_pca(
+                embeddings_df, n_components=self.embedding_dim
+            )
+
         # convert to format for use
         embeddings_df = embeddings_df.T
-        embeddings_df.columns = ["embedding_dim_" + str(i) for i in range(embeddings_df.shape[1])]
-        embeddings_df.reset_index(names = 'workout', inplace=True)
+        embeddings_df.columns = [
+            "embedding_dim_" + str(i) for i in range(embeddings_df.shape[1])
+        ]
+        embeddings_df.reset_index(names="workout", inplace=True)
         return embeddings_df
 
-    def fit(self, open_data, workout_descriptions=None):
-        """
-        Initialize any transformers for later use in transform
-        """
+    def _preprocess(self, open_data, workout_descriptions):
         # get a list of all possible columns
         temp_df = seperate_scaled_workouts(open_data)
         if not self.allow_modified:
             temp_df = remove_scaled_workout_columns(temp_df)
         temp_df = remove_suffixes(temp_df)
 
-        if not self.create_description_embeddings:
-            self.columns += list(temp_df.columns)
-
         # convert to floats (instead of reps, lbs time or mixed data types)
         temp_df = convert_to_floats(
-            temp_df, workout_descriptions, conversion_method = self.conversion_method, scale_up=self.scale_up
+            temp_df,
+            workout_descriptions,
+            conversion_method=self.conversion_method,
+            scale_up=self.scale_up,
         )
-        # fit normalization methods
-        if self.scaler:
-            self.scaler.fit(temp_df)
+        return temp_df
 
-        return
+    def fit(self, open_data):
+        """
+        Initialize any transformers for later use in transform
+        """
+
+        if not self.create_description_embeddings:
+            self.columns += list(open_data.columns)
+        super().fit()
 
     def transform(self, open_data, workout_descriptions=None):
         """
@@ -163,18 +178,9 @@ class OpenResultsFE(BaseFEPipelineObject):
 
         Returns:
             pd.DataFrame: The transformed data.
-
-        Notes:
-
         """
-        # separate out scaled workouts as separate columns
-        open_data = seperate_scaled_workouts(open_data)
-
-        # convert to floats (instead of reps, lbs time or mixed data types)
-        open_data = remove_suffixes(open_data)
-        open_data = convert_to_floats(
-            open_data, workout_descriptions, conversion_method = self.conversion_method, scale_up=self.scale_up
-        )
+        open_data = self._preprocess(open_data, workout_descriptions)
+        self.check_fit(open_data = open_data)
 
         # scale data if possible
         if self.scaler:
@@ -187,9 +193,7 @@ class OpenResultsFE(BaseFEPipelineObject):
         self.create_meta_data(open_data)
 
         if self.create_description_embeddings:
-            description_embeddings = self.description_embeddings(
-                workout_descriptions
-            )
+            description_embeddings = self.description_embeddings(workout_descriptions)
             # merge the two datasets
             open_data_transformed = pd.merge(
                 open_data, description_embeddings, how="left", on="workout"
@@ -241,7 +245,9 @@ class OpenResultsFE(BaseFEPipelineObject):
         elif scale_method == "standard":
             scaler = StandardScalerByWod()
         elif scale_method == "general":
-            assert "scaler_name" in scale_args, "To use general scaler, you must specify scaler_name"
+            assert (
+                "scaler_name" in scale_args
+            ), "To use general scaler, you must specify scaler_name"
             scaler = GenericSklearnScaler(**scale_args_)
         else:
             raise ValueError(

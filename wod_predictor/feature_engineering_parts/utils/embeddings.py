@@ -1,10 +1,12 @@
-from sklearn.decomposition import PCA
-from openai import OpenAI
 import os
-import pandas as pd
-from wod_predictor.helpers import get_base_path
-from wod_predictor.constants import OPEN_AI_API_KEY_PATH
 import warnings
+
+import pandas as pd
+from openai import OpenAI
+from sklearn.decomposition import PCA
+
+from wod_predictor.constants import OPEN_AI_API_KEY_PATH
+from wod_predictor.helpers import get_base_path
 
 
 class LLMClient:

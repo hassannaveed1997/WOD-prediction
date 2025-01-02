@@ -1,6 +1,7 @@
-import pandas as pd
-import numpy as np
 import re
+
+import numpy as np
+import pandas as pd
 
 EXCLUDED = ["workout_descriptions"]
 

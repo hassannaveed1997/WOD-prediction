@@ -1,6 +1,7 @@
 # Write any functions here for datascraping, so they can be reused
-import requests
 import json
+
+import requests
 from bs4 import BeautifulSoup
 from openai import OpenAI
 
@@ -28,9 +29,10 @@ def pull_all_data(division):
             ]
             print(",".join(row_out))
     # TODO: return it in the right format
-    return 
+    return
 
-def scrape_workout_description(year, workout, division = 1):
+
+def scrape_workout_description(year, workout, division=1):
     """
     This function will scrape the workout description from the crossfit games website
 
@@ -49,19 +51,22 @@ def scrape_workout_description(year, workout, division = 1):
         The description of the workout as a string.
     """
     # url = f"https://games.crossfit.com/competition/open/{year}/workouts/{workout}"
-    url = f"https://games.crossfit.com/workouts/open/{year}/{workout}?division={division}"
+    url = (
+        f"https://games.crossfit.com/workouts/open/{year}/{workout}?division={division}"
+    )
     response = requests.get(url)
     if response.status_code != 200:
         print(f"Error with year: {year}, workout: {workout}")
         return None
     html_content = response.content
-    soup = BeautifulSoup(html_content, 'html.parser')
-    description = soup.find_all('div', class_='exercises')
+    soup = BeautifulSoup(html_content, "html.parser")
+    description = soup.find_all("div", class_="exercises")
     if len(description) == 0:
         print(f"Error with year: {year}, workout: {workout}")
         return None
     description = description[0].text
     return description
+
 
 def clean_description(name, description):
     """
@@ -114,12 +119,12 @@ def clean_description(name, description):
     completion = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
-            {"role": "system", "content": "You are a helpful assistant designed to output JSON."},
-            {"role": "user", "content": prompt}
+            {
+                "role": "system",
+                "content": "You are a helpful assistant designed to output JSON.",
+            },
+            {"role": "user", "content": prompt},
         ],
     )
     cleaned_description = completion.choices[0].message.content
     return cleaned_description
-
-
-
