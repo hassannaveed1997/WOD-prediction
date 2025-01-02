@@ -3,6 +3,7 @@ import pandas as pd
 from wod_predictor.feature_engineering_parts.base import TransformerMixIn
 from wod_predictor.feature_engineering_parts.utils.missing_values import \
     MissingValueImputation
+from .utils.normalization import (GenericSklearnScaler)
 
 from ..constants import Constants as c
 from .utils.helpers import convert_units
@@ -18,6 +19,8 @@ class AthleteInfoFE(TransformerMixIn):
         self.transformers = []
         if missing_method is not None:
             self.transformers.append(MissingValueImputation(method=missing_method, **kwargs))
+        
+        self.transformers.append(GenericSklearnScaler(scaler_name='MinMaxScaler'))
         super().__init__()
 
     def transform(self, athlete_info_data: pd.DataFrame):
@@ -40,10 +43,11 @@ class AthleteInfoFE(TransformerMixIn):
         athlete_info_numeric = self.fix_units(athlete_info_melted)
 
         # run any available transformers
+        numeric_cols = list(set(athlete_info_numeric.columns).difference([c.athlete_id_col, c.year_col]))
         for transformer in self.transformers:
-            athlete_info_numeric = transformer.transform(athlete_info_numeric)
+            athlete_info_numeric[numeric_cols] = transformer.transform(athlete_info_numeric[numeric_cols])
 
-        return athlete_info_numeric.drop(columns=["name"])
+        return athlete_info_numeric
 
     def melt(self, athlete_info_data: pd.DataFrame):
         """
@@ -71,8 +75,6 @@ class AthleteInfoFE(TransformerMixIn):
         """
         Convert units of athlete info data.
         """
-        athlete_info_data["year"].astype(int)
-
         athlete_info_data["height"] = convert_units(
             athlete_info_data[["height"]], type="height"
         )
@@ -80,4 +82,4 @@ class AthleteInfoFE(TransformerMixIn):
             athlete_info_data[["weight"]], type="weight"
         )
 
-        return athlete_info_data
+        return athlete_info_data.drop(columns=["name"])
